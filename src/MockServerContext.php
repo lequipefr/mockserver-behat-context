@@ -30,6 +30,21 @@ class MockServerContext implements Context
         $this->client->reset();
     }
 
+    private function theRequestOnApiWillReturnBody(string $method, string $path, string $body): void
+    {
+        $this->client->expectation([
+            'json' => [
+                'httpRequest' => [
+                    'method' => $method,
+                    'path' => $path,
+                ],
+                'httpResponse' => [
+                    'body' => $body,
+                ],
+            ],
+        ]);
+    }
+
     /**
      * @Given the request :method :path will return the json:
      *
@@ -49,18 +64,20 @@ class MockServerContext implements Context
      * ]
      * """
      */
-    public function theRequestOnApiWillReturn(string $method, string $path, PyStringNode $node)
+    public function theRequestOnApiWillReturn(string $method, string $path, PyStringNode $node): void
     {
-        $this->client->expectation([
-            'json' => [
-                'httpRequest' => [
-                    'method' => $method,
-                    'path' => $path,
-                ],
-                'httpResponse' => [
-                    'body' => json_decode($node->getRaw()),
-                ],
-            ],
-        ]);
+        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw()));
+    }
+
+    /**
+     * @Given the request :method :path will return the json from file :filename
+     *
+     * Example:
+     *
+     * Given the request "GET" "/users" will return the json from file "users/get-users.json"
+     */
+    public function theRequestOnApiWillReturnFromFile(string $method, string $path, string $filename): void
+    {
+        $this->theRequestOnApiWillReturnBody($method, $path, file_get_contents($filename));
     }
 }
