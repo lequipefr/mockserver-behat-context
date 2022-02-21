@@ -18,7 +18,7 @@ default:
 
                 # Add this:
                 - Lequipe\MockServer\MockServerContext:
-                    mockServerUrl: 'http://127.0.0.1:1080'
+                    mockServer: 'http://127.0.0.1:1080'
 ```
 
 Now, in your behat tests, you should be able to mock the webservices your project depends to, with:

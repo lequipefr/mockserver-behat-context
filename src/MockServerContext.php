@@ -7,6 +7,7 @@ namespace Lequipe\MockServer;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use InvalidArgumentException;
 use Symfony\Component\HttpClient\HttpClient;
 
 class MockServerContext implements Context
@@ -15,22 +16,49 @@ class MockServerContext implements Context
 
     private string $featurePath;
 
+    private bool $shouldClearMocks;
+
     /**
-     * @param string $mockServerUrl Url to mockserver, i.e "http://127.0.0.1:1080"
+     * Pass only url here to simplify configuration in behat.yml
+     *
+     * @param string|MockServerClient $mockServer Url to mockserver, i.e "http://127.0.0.1:1080",
+     *                                            or an instance of MockServerClient
      */
-    public function __construct(string $mockServerUrl)
+    public function __construct($mockServer)
     {
-        $this->client = new MockServerClient(HttpClient::createForBaseUri($mockServerUrl));
+        if (is_string($mockServer)) {
+            $this->client = new MockServerClient(HttpClient::createForBaseUri($mockServer));
+        } elseif ($mockServer instanceof MockServerClient) {
+            $this->client = $mockServer;
+        } else {
+            throw new InvalidArgumentException(
+                'Expected $mockServer to be a string or an instance of '.MockServerClient::class
+            );
+        }
     }
 
     /**
-     * Clear previous expectations before scenario.
-     *
-     * @BeforeScenario @mockserver
+     * @BeforeScenario
      */
-    public function clearMocks(): void
+    public function beforeScenario(): void
     {
+        $this->shouldClearMocks = true;
+    }
+
+    /**
+     * Should be called before any call to api,
+     * to make sure to reset mocks from previous scenario,
+     * but only if scenario is using mockserver.
+     */
+    private function resetMockServerBeforeFirstApiCall(): void
+    {
+        if (!$this->shouldClearMocks) {
+            return;
+        }
+
         $this->client->reset();
+
+        $this->shouldClearMocks = false;
     }
 
     /**
@@ -43,8 +71,10 @@ class MockServerContext implements Context
         $this->featurePath = dirname($scope->getFeature()->getFile());
     }
 
-    private function theRequestOnApiWillReturnBody(string $method, string $path, string $body): void
+    private function theRequestOnApiWillReturnBody(string $method, string $path, $body): void
     {
+        $this->resetMockServerBeforeFirstApiCall();
+
         $this->client->expectation([
             'json' => [
                 'httpRequest' => [
