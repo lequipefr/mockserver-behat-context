@@ -12,9 +12,9 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class MockServerContext implements Context
 {
-    private MockServerClient $client;
+    protected MockServerClient $client;
 
-    private string $featurePath;
+    protected string $featurePath;
 
     private bool $shouldClearMocks;
 
@@ -50,7 +50,7 @@ class MockServerContext implements Context
      * to make sure to reset mocks from previous scenario,
      * but only if scenario is using mockserver.
      */
-    private function resetMockServerBeforeFirstApiCall(): void
+    protected function resetMockServerBeforeFirstApiCall(): void
     {
         if (!$this->shouldClearMocks) {
             return;
@@ -71,7 +71,7 @@ class MockServerContext implements Context
         $this->featurePath = dirname($scope->getFeature()->getFile());
     }
 
-    private function theRequestOnApiWillReturnBody(string $method, string $path, $body): void
+    protected function theRequestOnApiWillReturnBody(string $method, string $path, $body): void
     {
         $this->resetMockServerBeforeFirstApiCall();
 
