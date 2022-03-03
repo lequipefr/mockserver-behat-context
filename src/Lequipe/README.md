@@ -18,7 +18,7 @@ default:
 
                 # Add this:
                 - Lequipe\MockServer\Lequipe\LequipeMockServerContext:
-                    mockServer: 'http://127.0.0.1:1080'
+                    mockServer: 'http://mockserver:1080'
 ```
 
 Pour mocker les différentes url vers les autres MS, modifier par exemple :
@@ -26,12 +26,12 @@ Pour mocker les différentes url vers les autres MS, modifier par exemple :
 `.env.test`:
 
 ```
-MS_AUTH_BASE_URI=http://mockserver:1080/ms-auth
-MS_SHELL_BASE_URI=http://mockserver:1080/ms-shell
-MS_SEARCH_BASE_URI=http://mockserver:1080/ms-search
+MS_AUTH_BASE_URI=http://mockserver:1080/ms-auth/
+MS_SHELL_BASE_URI=http://mockserver:1080/ms-shell/
+MS_SEARCH_BASE_URI=http://mockserver:1080/ms-search/
 ```
 
-(*no trailing slash*)
+:warning: Trailing slash: Il faut normalement un slash de fin après le préfix si on suit la RFC 3986 (exemple sur [la doc de Symfony](https://symfony.com/doc/current/reference/configuration/framework.html#base-uri)), mais dans certains MS, il faudra changer la config afin de retirer le slash de début ajouté en dur, et aussi dans les dépendances (bundles...).
 
 Ensuite, mocker les appels MS avec les phrases Gherkins :
 
