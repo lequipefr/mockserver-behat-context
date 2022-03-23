@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Lequipe\Test\MockServer;
+
 use Behat\Gherkin\Node\PyStringNode;
 use Lequipe\MockServer\MockServerClient;
 use Lequipe\MockServer\MockServerContext;

@@ -18,7 +18,9 @@ class MockServerClient
 
     public function expectation(array $parameters): ResponseInterface
     {
-        return $this->client->request('PUT', '/expectation', $parameters);
+        return $this->client->request('PUT', '/expectation', [
+            'json' => $parameters,
+        ]);
     }
 
     public function reset(): ResponseInterface
