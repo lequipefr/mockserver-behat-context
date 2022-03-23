@@ -34,7 +34,7 @@ class LequipeMockServerContext extends MockServerContext
      */
     public function theMsWillReturn(string $ms, string $method, string $path, PyStringNode $node): void
     {
-        $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), json_decode($node->getRaw()));
+        $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), json_decode($node->getRaw(), true));
     }
 
     /**
@@ -46,8 +46,8 @@ class LequipeMockServerContext extends MockServerContext
      */
     public function theMsWillReturnFromFile(string $ms, string $method, string $path, string $filename): void
     {
-        $json = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
+        $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
 
-        $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), $json);
+        $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), json_decode($content, true));
     }
 }

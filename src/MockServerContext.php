@@ -8,6 +8,7 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use InvalidArgumentException;
+use Lequipe\MockServer\Expectation\ExpectationBuilder;
 use Symfony\Component\HttpClient\HttpClient;
 
 class MockServerContext implements Context
@@ -17,6 +18,8 @@ class MockServerContext implements Context
     protected string $featurePath;
 
     private bool $shouldClearMocks;
+
+    private ?ExpectationBuilder $currentExpectation = null;
 
     /**
      * Pass only url here to simplify configuration in behat.yml
@@ -35,6 +38,29 @@ class MockServerContext implements Context
                 'Expected $mockServer to be a string or an instance of '.MockServerClient::class
             );
         }
+    }
+
+    protected function getCurrentExpectation(): ExpectationBuilder
+    {
+        if (null === $this->currentExpectation) {
+            $this->currentExpectation = new ExpectationBuilder();
+        }
+
+        return $this->currentExpectation;
+    }
+
+    protected function resetCurrentExpectation(): void
+    {
+        $this->currentExpectation = null;
+    }
+
+    protected function dumpCurrentExpectation(): array
+    {
+        $params = $this->getCurrentExpectation()->toArray();
+
+        $this->currentExpectation = null;
+
+        return $params;
     }
 
     /**
@@ -71,21 +97,141 @@ class MockServerContext implements Context
         $this->featurePath = dirname($scope->getFeature()->getFile());
     }
 
-    protected function theRequestOnApiWillReturnBody(string $method, string $path, $body): void
+    protected function theRequestOnApiWillReturnBody(string $method, string $path, array $body): void
     {
         $this->resetMockServerBeforeFirstApiCall();
 
-        $this->client->expectation([
-            'json' => [
-                'httpRequest' => [
-                    'method' => $method,
-                    'path' => $path,
-                ],
-                'httpResponse' => [
-                    'body' => $body,
-                ],
-            ],
-        ]);
+        $parsedUrl = parse_url($path);
+
+        $this->getCurrentExpectation()->expectedRequest()
+            ->method($method)
+            ->path($parsedUrl['path'])
+        ;
+
+        if (array_key_exists('query', $parsedUrl)) {
+            $this->getCurrentExpectation()->expectedRequest()
+                ->addQueryStringParametersFromString($parsedUrl['query'])
+            ;
+        }
+
+        $this->getCurrentExpectation()->mockedResponse()
+            ->bodyJson($body)
+        ;
+
+        $this->client->expectation($this->dumpCurrentExpectation());
+    }
+
+    /**
+     * Manually clear mocks.
+     *
+     * @Given I reset mocks
+     */
+    public function iResetMocks(): void
+    {
+        $this->client->reset();
+
+        $this->shouldClearMocks = false;
+    }
+
+    /**
+     * Set an expected header in request in order to send the mock.
+     *
+     * @Given I will receive the header :name :value
+     *
+     * Example:
+     *
+     * Given I will receive the header "Content-Type" "application/json"
+     * And the request "PATCH" "/users/1" will return the json:
+     * """
+     * [
+     *   {
+     *      "id": 1,
+     *      "name": "Zidane edited"
+     *   }
+     * ]
+     * """
+     */
+    public function iWillReceiveTheHeader(string $name, string $value): void
+    {
+        $this->getCurrentExpectation()->expectedRequest()->addHeader($name, $value);
+    }
+
+    /**
+     * @Given I will receive this raw body:
+     */
+    public function iWillReceiveTheRawBody(PyStringNode $node): void
+    {
+        $this->getCurrentExpectation()->expectedRequest()
+            ->bodyRaw($node->getRaw())
+        ;
+    }
+
+    /**
+     * Set an expected json payload that should match in order to send the mock.
+     *
+     * @Given I will receive this json payload:
+     *
+     * Example:
+     *
+     * Given I will receive this json payload:
+     * """
+     * {"name": "Zidane edited"}
+     * """
+     * And the request "PATCH" "/users/1" will return the json:
+     * """
+     * [
+     *   {
+     *      "id": 1,
+     *      "name": "Zidane edited"
+     *   }
+     * ]
+     * """
+     */
+    public function iExpectTheRequestJson(PyStringNode $node): void
+    {
+        $this->getCurrentExpectation()->expectedRequest()
+            ->bodyJson(json_decode($node->getRaw(), true))
+        ;
+    }
+
+    /**
+     * Send custom expectation.
+     *
+     * @see https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.13.x#/expectation/put_expectation
+     *
+     * @Given I expect this request:
+     *
+     * Example:
+     *
+     *  Given the request "GET" "/users" will return the json:
+     *  """
+     *  {
+     *      "httpRequest": {
+     *          "method": "get",
+     *          "path": "/my/custom/path",
+     *          "queryStringParameters": [
+     *              {"name": "myParam", "values": ["possibleValue", "otherPossibleValue"]}
+     *          ],
+     *          "body": {
+     *              "expected_body": "ok"
+     *          }
+     *      },
+     *      "httpResponse": {
+     *          "statusCode": 200,
+     *          "body": {
+     *              "my_custom_body": "ok"
+     *          }
+     *      }
+     *  }
+     *  """
+     */
+    public function iExpectThisRequest(PyStringNode $node): void
+    {
+        $this->resetMockServerBeforeFirstApiCall();
+
+        $expectation = json_decode($node->getRaw(), true);
+
+        $this->client->expectation($expectation);
     }
 
     /**
@@ -109,7 +255,7 @@ class MockServerContext implements Context
      */
     public function theRequestOnApiWillReturn(string $method, string $path, PyStringNode $node): void
     {
-        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw()));
+        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw(), true));
     }
 
     /**
@@ -121,8 +267,8 @@ class MockServerContext implements Context
      */
     public function theRequestOnApiWillReturnFromFile(string $method, string $path, string $filename): void
     {
-        $json = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
+        $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
 
-        $this->theRequestOnApiWillReturnBody($method, $path, $json);
+        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($content, true));
     }
 }

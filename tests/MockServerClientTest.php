@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Lequipe\Test\MockServer;
+
 use Lequipe\MockServer\MockServerClient;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -39,14 +43,12 @@ class MockServerClientTest extends TestCase
         $client = new MockServerClient($httpClient->reveal());
 
         $client->expectation([
-            'json' => [
-                'httpRequest' => [
-                    'method' => 'GET',
-                    'path' => '/user/1',
-                ],
-                'httpResponse' => [
-                    'body' => $json,
-                ],
+            'httpRequest' => [
+                'method' => 'GET',
+                'path' => '/user/1',
+            ],
+            'httpResponse' => [
+                'body' => $json,
             ],
         ]);
     }
