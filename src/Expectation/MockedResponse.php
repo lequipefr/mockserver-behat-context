@@ -16,6 +16,16 @@ class MockedResponse
         return $this;
     }
 
+    /**
+     * @param array|string $body
+     */
+    public function body($body): self
+    {
+        $this->body = $body;
+
+        return $this;
+    }
+
     public function bodyJson(array $body): self
     {
         $this->body = $body;

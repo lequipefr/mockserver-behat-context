@@ -23,6 +23,13 @@ class MockServerClient
         ]);
     }
 
+    public function verify(array $parameters): ResponseInterface
+    {
+        return $this->client->request('PUT', '/verify', [
+            'json' => $parameters,
+        ]);
+    }
+
     public function reset(): ResponseInterface
     {
         return $this->client->request('PUT', '/reset');
