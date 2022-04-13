@@ -203,7 +203,7 @@ class MockServerContext implements Context
      *
      * Example:
      *
-     *  Given the request "GET" "/users" will return the json:
+     *  Given I expect this request:
      *  """
      *  {
      *      "httpRequest": {
@@ -235,6 +235,20 @@ class MockServerContext implements Context
     }
 
     /**
+     * @Given the request :method :path will return body from file :filename
+     *
+     * Example:
+     *
+     * Given the request "GET" "index.html" will return body from file "mock-index.html"
+     */
+    public function theRequestWillReturnFromFile(string $method, string $path, string $filename): void
+    {
+        $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
+
+        $this->theRequestOnApiWillReturnBody($method, $path, ['string' => $content]);
+    }
+
+    /**
      * @Given the request :method :path will return the json:
      *
      * Example:
@@ -253,7 +267,7 @@ class MockServerContext implements Context
      * ]
      * """
      */
-    public function theRequestOnApiWillReturn(string $method, string $path, PyStringNode $node): void
+    public function theRequestOnApiWillReturnJson(string $method, string $path, PyStringNode $node): void
     {
         $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw(), true));
     }
@@ -270,5 +284,27 @@ class MockServerContext implements Context
         $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
 
         $this->theRequestOnApiWillReturnBody($method, $path, json_decode($content, true));
+    }
+
+    /**
+     * @Then the request :method :path should have been called exactly :times times
+     *
+     * Example:
+     *
+     *  When I send a "PUT" request on "/users/1"
+     *  Then the request "PUT" "/sso/users/1" should have been called exactly 1 times
+     */
+    public function iVerify(string $method, string $path, int $times): void
+    {
+        $this->client->verify([
+            'httpRequest' => [
+                'method' => $method,
+                'path' => $path,
+            ],
+            'times' => [
+                'atLeast' => $times,
+                'atMost' => $times,
+            ],
+        ]);
     }
 }
