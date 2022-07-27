@@ -69,6 +69,7 @@ class MockServerContext implements Context
     public function beforeScenario(): void
     {
         $this->shouldClearMocks = true;
+        $this->currentExpectation = null;
     }
 
     /**

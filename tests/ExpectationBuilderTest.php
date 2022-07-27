@@ -52,4 +52,29 @@ class ExpectationBuilderTest extends TestCase
             ],
         ], $parameters);
     }
+
+    public function testExpectationQueryString(): void
+    {
+        $builder = new ExpectationBuilder();
+
+        $builder->expectedRequest()
+            ->method('get')
+            ->path('api/users')
+            ->addQueryStringParametersFromString('filter=enabled&site=lequipe')
+        ;
+
+        $parameters = $builder->toArray();
+
+        $this->assertEquals([
+            'httpRequest' => [
+                'method' => 'get',
+                'path' => 'api/users',
+                'queryStringParameters' => [
+                    ['name' => 'filter', 'values' => ['enabled']],
+                    ['name' => 'site', 'values' => ['lequipe']],
+                ],
+            ],
+            'httpResponse' => [],
+        ], $parameters);
+    }
 }
