@@ -107,6 +107,7 @@ class ExpectedRequest
             'path' => $this->path,
             'headers' => $this->headers,
             'body' => $this->body,
+            'queryStringParameters' => $this->queryStringParameters,
         ], function ($v) {
             return null !== $v;
         });
