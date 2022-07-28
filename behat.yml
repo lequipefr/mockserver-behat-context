@@ -1,0 +1,8 @@
+default:
+    suites:
+        default:
+            contexts:
+                - FeatureContext: ~
+                - Lequipe\MockServer\MockServerContext:
+                    mockServer:
+                        class: \TraceableMockServerClient

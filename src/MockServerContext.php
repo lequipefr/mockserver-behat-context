@@ -7,13 +7,14 @@ namespace Lequipe\MockServer;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Exception;
 use InvalidArgumentException;
 use Lequipe\MockServer\Expectation\ExpectationBuilder;
 use Symfony\Component\HttpClient\HttpClient;
 
 class MockServerContext implements Context
 {
-    protected MockServerClient $client;
+    protected MockServerClientInterface $client;
 
     protected string $featurePath;
 
@@ -24,20 +25,41 @@ class MockServerContext implements Context
     /**
      * Pass only url here to simplify configuration in behat.yml
      *
-     * @param string|MockServerClient $mockServer Url to mockserver, i.e "http://127.0.0.1:1080",
-     *                                            or an instance of MockServerClient
+     * @param string|MockServerClientInterface $mockServer
+     *      Either a url to mockserver, i.e:
+     *
+     *          - Lequipe\MockServer\MockServerContext:
+     *              mockServer: "http://127.0.0.1:1080"
+     *
+     *      or an array with keys class and arguments, i.e:
+     *
+     *          - Lequipe\MockServer\MockServerContext:
+     *              mockServer:
+     *                  class: App\MyCustomClient
+     *                  arguments:
+     *                      - 'argument'
+     *
+     *      or an instance of MockServerClientInterface (programmatic use).
      */
     public function __construct($mockServer)
     {
         if (is_string($mockServer)) {
             $this->client = new MockServerClient(HttpClient::createForBaseUri($mockServer));
-        } elseif ($mockServer instanceof MockServerClient) {
+        } elseif (is_array($mockServer) && isset($mockServer['class'])) {
+            $arguments = $mockServer['arguments'] ?? [];
+            $this->client = new $mockServer['class'](...$arguments);
+        } elseif ($mockServer instanceof MockServerClientInterface) {
             $this->client = $mockServer;
         } else {
             throw new InvalidArgumentException(
-                'Expected $mockServer to be a string or an instance of '.MockServerClient::class
+                'Expected $mockServer to be a string, array with class/arguments, or an instance of '.MockServerClientInterface::class
             );
         }
+    }
+
+    public function getClient(): MockServerClientInterface
+    {
+        return $this->client;
     }
 
     protected function getCurrentExpectation(): ExpectationBuilder
@@ -270,6 +292,12 @@ class MockServerContext implements Context
      */
     public function theRequestOnApiWillReturnJson(string $method, string $path, PyStringNode $node): void
     {
+        $json = json_decode($node->getRaw(), true);
+
+        if (null === $json) {
+            throw new Exception('Error while parsing json.');
+        }
+
         $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw(), true));
     }
 
@@ -282,7 +310,18 @@ class MockServerContext implements Context
      */
     public function theRequestOnApiWillReturnFromFile(string $method, string $path, string $filename): void
     {
-        $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
+        $fullFilename = $this->featurePath . DIRECTORY_SEPARATOR . $filename;
+
+        if (!file_exists($fullFilename)) {
+            throw new Exception('File "' . $fullFilename . '" not found.');
+        }
+
+        $content = file_get_contents($fullFilename);
+        $json = json_decode($content, true);
+
+        if (null === $json) {
+            throw new Exception('Error while parsing json from file "' . $fullFilename . '".');
+        }
 
         $this->theRequestOnApiWillReturnBody($method, $path, json_decode($content, true));
     }

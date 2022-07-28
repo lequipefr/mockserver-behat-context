@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Lequipe\MockServer;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class MockServerClient
+class MockServerClient implements MockServerClientInterface
 {
     private HttpClientInterface $client;
 
@@ -16,22 +15,22 @@ class MockServerClient
         $this->client = $client;
     }
 
-    public function expectation(array $parameters): ResponseInterface
+    public function expectation(array $parameters): void
     {
-        return $this->client->request('PUT', '/expectation', [
+        $this->client->request('PUT', '/expectation', [
             'json' => $parameters,
         ]);
     }
 
-    public function verify(array $parameters): ResponseInterface
+    public function verify(array $parameters): void
     {
-        return $this->client->request('PUT', '/verify', [
+        $this->client->request('PUT', '/verify', [
             'json' => $parameters,
         ]);
     }
 
-    public function reset(): ResponseInterface
+    public function reset(): void
     {
-        return $this->client->request('PUT', '/reset');
+        $this->client->request('PUT', '/reset');
     }
 }
