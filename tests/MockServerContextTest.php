@@ -23,19 +23,17 @@ class MockServerContextTest extends TestCase
         $client
             ->reset()
             ->shouldBeCalledTimes(1)
-            ->willReturn($this->prophesize(ResponseInterface::class))
         ;
 
         $client
             ->expectation(Argument::any())
-            ->willReturn($this->prophesize(ResponseInterface::class))
         ;
 
         $context = new MockServerContext($client->reveal());
 
         $context->beforeScenario();
-        $context->theRequestOnApiWillReturn('get', '/users', new PyStringNode(['[]'], 0));
-        $context->theRequestOnApiWillReturn('get', '/users/1', new PyStringNode(['{}'], 0));
+        $context->theRequestOnApiWillReturnJson('get', '/users', new PyStringNode(['[]'], 0));
+        $context->theRequestOnApiWillReturnJson('get', '/users/1', new PyStringNode(['{}'], 0));
     }
 
     public function testResetIsNotCalledIfNotApiCall()
@@ -45,7 +43,6 @@ class MockServerContextTest extends TestCase
         $client
             ->reset()
             ->shouldBeCalledTimes(0)
-            ->willReturn($this->prophesize(ResponseInterface::class))
         ;
 
         $context = new MockServerContext($client->reveal());
