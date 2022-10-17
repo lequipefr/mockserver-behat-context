@@ -243,3 +243,48 @@ Feature: I can send expectations on a mockserver instance.
                 }
             }
             """
+    Scenario: I can pass query parameter in the request path
+        Given the request "GET" "/users/1?param=val&scopes[]=basics&scopes[]=optins&array[key]=val" will return the json:
+            """
+            [
+                {
+                    "id": 1,
+                    "name": "Zidane edited"
+                }
+            ]
+            """
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/users/1",
+                    "queryStringParameters": [
+                        {
+                            "name": "param",
+                            "values": ["val"]
+                        },
+                        {
+                            "name": "scopes[0]",
+                            "values": ["basics"]
+                        },
+                        {
+                            "name": "scopes[1]",
+                            "values": ["optins"]
+                        },
+                        {
+                            "name": "array[key]",
+                            "values": ["val"]
+                        }
+                    ]
+                },
+                "httpResponse": {
+                    "body": [
+                        {
+                            "id": 1,
+                            "name": "Zidane edited"
+                        }
+                    ]
+                }
+            }
+            """
