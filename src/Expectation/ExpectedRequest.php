@@ -70,6 +70,14 @@ class ExpectedRequest
         parse_str($queryString, $params);
 
         foreach ($params as $name => $value) {
+
+            if (\is_array($value)) {
+                foreach ($value as $key => $val) {
+                    $this->addQueryStringParameter($name."[".$key."]", $val);
+                }
+                continue;
+            }
+
             $this->addQueryStringParameter($name, $value);
         }
 
