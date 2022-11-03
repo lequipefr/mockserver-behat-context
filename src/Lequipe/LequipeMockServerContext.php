@@ -34,6 +34,11 @@ class LequipeMockServerContext extends MockServerContext
      */
     public function theMsWillReturn(string $ms, string $method, string $path, PyStringNode $node): void
     {
+        @trigger_error(
+            "This Lequipe phrase is deprecated, use 'Given the request \"$method\" \"" . '/' .$ms . '/' . ltrim($path, '/') . "\" will return...' instead.",
+            \E_USER_DEPRECATED,
+        );
+
         $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), json_decode($node->getRaw(), true));
     }
 
@@ -46,6 +51,11 @@ class LequipeMockServerContext extends MockServerContext
      */
     public function theMsWillReturnFromFile(string $ms, string $method, string $path, string $filename): void
     {
+        @trigger_error(
+            "This Lequipe phrase is deprecated, use 'Given the request \"$method\" \"" . '/' .$ms . '/' . ltrim($path, '/') . "\" will return...' instead.",
+            \E_USER_DEPRECATED,
+        );
+
         $content = file_get_contents($this->featurePath . DIRECTORY_SEPARATOR . $filename);
 
         $this->theRequestOnApiWillReturnBody($method, '/' . $ms . '/' . ltrim($path, '/'), json_decode($content, true));

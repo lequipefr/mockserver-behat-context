@@ -1,5 +1,20 @@
 # Mockserver context L'Équipe
 
+> **DÉPRÉCIÉ** : Ce "sous" contexte L'Équipe contient seulement 2 phrases qui ajoutent
+> le fait de mocker un "microservice", et la doc d'installation sur un projet léquipe.
+>
+> La doc d'installation sur un projet l'équipe est dispo sur confluence : <https://lequipe.atlassian.net/wiki/spaces/DOCTECH/pages/982286341/MockServer>
+>
+> Et c'est toujours possible de mocker des "microservice" en utilisant les phrases de base :
+>
+> ``` cucumber
+> Given the MS "ms-user" "GET" "/users" will return the json...
+>
+> # devient (et donne le même résultat) =>
+>
+> Given the request "GET" "/ms-user/users" will return the json...
+> ```
+
 Context Behat pour [MockServer](https://www.mock-server.com/).
 
 Cette page est spécifique à l'installation et l'usage

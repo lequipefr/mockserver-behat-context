@@ -7,10 +7,10 @@ namespace Lequipe\MockServer;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
-use Exception;
-use InvalidArgumentException;
+use Lequipe\MockServer\Exception\Exception;
 use Lequipe\MockServer\Expectation\ExpectationBuilder;
 use Symfony\Component\HttpClient\HttpClient;
+use TypeError;
 
 class MockServerContext implements Context
 {
@@ -18,7 +18,8 @@ class MockServerContext implements Context
 
     protected string $featurePath;
 
-    private bool $shouldClearMocks;
+    private bool $shouldResetBefore;
+    private bool $shouldResetAfter;
 
     private ?ExpectationBuilder $currentExpectation = null;
 
@@ -51,7 +52,7 @@ class MockServerContext implements Context
         } elseif ($mockServer instanceof MockServerClientInterface) {
             $this->client = $mockServer;
         } else {
-            throw new InvalidArgumentException(
+            throw new TypeError(
                 'Expected $mockServer to be a string, array with class/arguments, or an instance of '.MockServerClientInterface::class
             );
         }
@@ -90,24 +91,40 @@ class MockServerContext implements Context
      */
     public function beforeScenario(): void
     {
-        $this->shouldClearMocks = true;
+        $this->shouldResetBefore = true;
+        $this->shouldResetAfter = false;
         $this->currentExpectation = null;
     }
 
     /**
-     * Should be called before any call to api,
-     * to make sure to reset mocks from previous scenario,
-     * but only if scenario is using mockserver.
+     * @AfterScenario
      */
-    protected function resetMockServerBeforeFirstApiCall(): void
+    public function afterScenario(): void
     {
-        if (!$this->shouldClearMocks) {
-            return;
+        if (null !== $this->currentExpectation) {
+            throw new Exception('An expectation is currently building and has not been sent');
         }
 
-        $this->client->reset();
+        if ($this->shouldResetAfter) {
+            $this->client->reset();
+            $this->shouldResetAfter = false;
+        }
+    }
 
-        $this->shouldClearMocks = false;
+    /**
+     * Should be called before any call to api,
+     * to make sure to reset mocks from previous scenario
+     * and reset expectations after scenario if necessary,
+     * but only if scenario is using mockserver.
+     */
+    protected function flagMockserverExpectation(): void
+    {
+        $this->shouldResetAfter = true;
+
+        if ($this->shouldResetBefore) {
+            $this->client->reset();
+            $this->shouldResetBefore = false;
+        }
     }
 
     /**
@@ -122,7 +139,7 @@ class MockServerContext implements Context
 
     protected function theRequestOnApiWillReturnBody(string $method, string $path, array $body): void
     {
-        $this->resetMockServerBeforeFirstApiCall();
+        $this->flagMockserverExpectation();
 
         $parsedUrl = parse_url($path);
 
@@ -153,7 +170,7 @@ class MockServerContext implements Context
     {
         $this->client->reset();
 
-        $this->shouldClearMocks = false;
+        $this->shouldResetBefore = false;
     }
 
     /**
@@ -250,7 +267,7 @@ class MockServerContext implements Context
      */
     public function iExpectThisRequest(PyStringNode $node): void
     {
-        $this->resetMockServerBeforeFirstApiCall();
+        $this->flagMockserverExpectation();
 
         $expectation = json_decode($node->getRaw(), true);
 
