@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+namespace Lequipe\Test\MockServer;
+
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Environment\InitializedContextEnvironment;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
-use Lequipe\MockServer\MockServerContext;
+use DomainException;
+use Lequipe\MockServer\Behat\MockServerContext;
 
 use function PHPUnit\Framework\assertEquals;
 
@@ -30,10 +33,10 @@ class FeatureContext implements Context
             throw new DomainException('Expected an instance of InitializedContextEnvironment');
         }
 
-        $context = $environment->getContext('Lequipe\MockServer\MockServerContext');
+        $context = $environment->getContext(MockServerContext::class);
 
         if (!$context instanceof MockServerContext) {
-            throw new DomainException('Expected an instance of MockServerContext');
+            throw new DomainException('Expected an instance of ' . MockServerContext::class);
         }
 
         $client = $context->getClient();

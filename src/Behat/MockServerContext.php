@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Lequipe\MockServer;
+namespace Lequipe\MockServer\Behat;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
+use Lequipe\MockServer\Client\MockServerClient;
+use Lequipe\MockServer\Client\MockServerClientInterface;
 use Lequipe\MockServer\Exception\Exception;
 use Lequipe\MockServer\Expectation\ExpectationBuilder;
-use Symfony\Component\HttpClient\HttpClient;
 use TypeError;
 
 class MockServerContext implements Context
@@ -29,12 +30,12 @@ class MockServerContext implements Context
      * @param string|MockServerClientInterface $mockServer
      *      Either a url to mockserver, i.e:
      *
-     *          - Lequipe\MockServer\MockServerContext:
+     *          - Lequipe\MockServer\Behat\MockServerContext:
      *              mockServer: "http://127.0.0.1:1080"
      *
      *      or an array with keys class and arguments, i.e:
      *
-     *          - Lequipe\MockServer\MockServerContext:
+     *          - Lequipe\MockServer\Behat\MockServerContext:
      *              mockServer:
      *                  class: App\MyCustomClient
      *                  arguments:
@@ -45,7 +46,7 @@ class MockServerContext implements Context
     public function __construct($mockServer)
     {
         if (is_string($mockServer)) {
-            $this->client = new MockServerClient(HttpClient::createForBaseUri($mockServer));
+            $this->client = new MockServerClient($mockServer);
         } elseif (is_array($mockServer) && isset($mockServer['class'])) {
             $arguments = $mockServer['arguments'] ?? [];
             $this->client = new $mockServer['class'](...$arguments);
@@ -53,7 +54,7 @@ class MockServerContext implements Context
             $this->client = $mockServer;
         } else {
             throw new TypeError(
-                'Expected $mockServer to be a string, array with class/arguments, or an instance of '.MockServerClientInterface::class
+                'Expected $mockServer to be a string, array with keys "class" and "arguments", or an instance of ' . MockServerClientInterface::class,
             );
         }
     }

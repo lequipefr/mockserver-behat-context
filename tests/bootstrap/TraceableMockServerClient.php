@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-use Lequipe\MockServer\MockServerClientInterface;
+namespace Lequipe\Test\MockServer;
+
+use Lequipe\MockServer\Client\MockServerClientInterface;
 
 class TraceableMockServerClient implements MockServerClientInterface
 {

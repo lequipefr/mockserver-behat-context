@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Lequipe\Test\MockServer;
+namespace Lequipe\Test\MockServer\Behat;
 
 use Behat\Gherkin\Node\PyStringNode;
 use Lequipe\MockServer\Exception\Exception;
-use Lequipe\MockServer\MockServerClient;
-use Lequipe\MockServer\MockServerContext;
+use Lequipe\MockServer\Behat\MockServerContext;
+use Lequipe\MockServer\Client\MockServerClient;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class MockServerContextTest extends TestCase
 {

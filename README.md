@@ -25,7 +25,7 @@ default:
             contexts:
 
                 # Add this:
-                - Lequipe\MockServer\MockServerContext:
+                - Lequipe\MockServer\Behat\MockServerContext:
                     mockServer: 'http://127.0.0.1:1080'
 ```
 
@@ -46,15 +46,15 @@ Given the request "GET" "/user/1" will return the json:
 ### PHP client
 
 You can use [MockServerClient](./src/MockServerClient.php) as a simple client,
-and send your expectations as defined in [mockserver swagger api](https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.12.x#/expectation/put_expectation):
+and send your expectations as raw arrays, as defined in
+[mockserver swagger api](https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.12.x#/expectation/put_expectation):
 
 ``` php
 <?php
 
-use Lequipe\MockServer\MockServerClient;
-use Symfony\Component\HttpClient\HttpClient;
+use Lequipe\MockServer\Client\MockServerClient;
 
-$client = new MockServerClient(HttpClient::createForBaseUri('http://127.0.0.1:1080'));
+$client = new MockServerClient('http://127.0.0.1:1080');
 
 $client->expectation([
     'httpRequest' => [
@@ -72,16 +72,17 @@ $client->expectation([
 ]);
 ```
 
-Or use the [expectation builder](./src/Expectation/ExpectationBuilder.php):
+### Builder
+
+Instead of raw arrays, you can use the [expectation builder](./src/Expectation/ExpectationBuilder.php):
 
 ``` php
 <?php
 
 use Lequipe\MockServer\MockServerClient;
 use Lequipe\MockServer\Expectation\ExpectationBuilder;
-use Symfony\Component\HttpClient\HttpClient;
 
-$client = new MockServerClient(HttpClient::createForBaseUri('http://127.0.0.1:1080'));
+$client = new MockServerClient('http://127.0.0.1:1080');
 
 $builder = new ExpectationBuilder();
 
@@ -136,7 +137,7 @@ Feature: My feature
 
 ```
 
-Check all available phrases and examples in [features/expectations.feature](./features/expectations.feature).
+Check **all available phrases and examples** in [features/expectations.feature](./features/expectations.feature).
 
 ## Configuration example
 

@@ -2,7 +2,7 @@ default:
     suites:
         default:
             contexts:
-                - FeatureContext: ~
-                - Lequipe\MockServer\MockServerContext:
+                - Lequipe\Test\MockServer\FeatureContext: ~
+                - Lequipe\MockServer\Behat\MockServerContext:
                     mockServer:
-                        class: \TraceableMockServerClient
+                        class: Lequipe\Test\MockServer\TraceableMockServerClient
