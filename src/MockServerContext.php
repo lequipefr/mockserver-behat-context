@@ -113,12 +113,15 @@ class MockServerContext implements Context
     }
 
     /**
+     * /!\ if you create custom phrases that send expectation,
+     *     use this method to make sure to clear previous expectation if needed.
+     *
      * Should be called before any call to api,
      * to make sure to reset mocks from previous scenario
      * and reset expectations after scenario if necessary,
      * but only if scenario is using mockserver.
      */
-    protected function flagMockserverExpectation(): void
+    protected function resetMockserverBeforeFirstApiCall(): void
     {
         $this->shouldResetAfter = true;
 
@@ -126,6 +129,14 @@ class MockServerContext implements Context
             $this->client->reset();
             $this->shouldResetBefore = false;
         }
+    }
+
+    /**
+     * @deprecated Use resetMockserverBeforeFirstApiCall() instead. Will be removed in 1.0.0
+     */
+    protected function flagMockserverExpectation(): void
+    {
+        $this->resetMockserverBeforeFirstApiCall();
     }
 
     /**
@@ -140,7 +151,7 @@ class MockServerContext implements Context
 
     protected function theRequestOnApiWillReturnBody(string $method, string $path, array $body): void
     {
-        $this->flagMockserverExpectation();
+        $this->resetMockserverBeforeFirstApiCall();
 
         $parsedUrl = parse_url($path);
 
@@ -268,7 +279,7 @@ class MockServerContext implements Context
      */
     public function iExpectThisRequest(PyStringNode $node): void
     {
-        $this->flagMockserverExpectation();
+        $this->resetMockserverBeforeFirstApiCall();
 
         $expectation = json_decode($node->getRaw(), true);
 
