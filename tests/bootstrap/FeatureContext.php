@@ -61,6 +61,18 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Then mockserver should receive the following verification only:
+     */
+    public function mockserverShouldReceiveTheFollowingVerificationOnly(PyStringNode $string): void
+    {
+        $expected = json_decode($string->__toString(), true);
+        $actuals = $this->client->getVerifications();
+
+        assertEquals(1, count($actuals), 'Mockserver received exactly 1 verification');
+        assertEquals($expected, $actuals[0], 'Mockserver has received the expected verification');
+    }
+
+    /**
      * @Then print expectations
      */
     public function printExpectations(): void
