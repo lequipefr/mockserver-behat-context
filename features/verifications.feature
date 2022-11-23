@@ -20,7 +20,7 @@ Feature: I can verify request have been received by mockserver.
 
     Scenario: I can verify that a request with query parameters has been sent.
 
-        Given the request "GET" "/api/users?active=yes&gender=F" should have been called exactly 1 times
+        Given the request "GET" "/api/users?active=yes&gender=F&sport.id=1" should have been called exactly 1 times
 
         Then mockserver should receive the following verification only:
             """
@@ -36,6 +36,10 @@ Feature: I can verify request have been received by mockserver.
                         {
                             "name": "gender",
                             "values": ["F"]
+                        },
+                        {
+                            "name": "sport.id",
+                            "values": ["1"]
                         }
                     ]
                 },

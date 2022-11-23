@@ -243,6 +243,7 @@ Feature: I can send expectations on a mockserver instance.
                 }
             }
             """
+
     Scenario: I can pass query parameter in the request path
         Given the request "GET" "/users/1?param=val&scopes[]=basics&scopes[]=optins&array[key]=val" will return the json:
             """
@@ -283,6 +284,40 @@ Feature: I can send expectations on a mockserver instance.
                         {
                             "id": 1,
                             "name": "Zidane edited"
+                        }
+                    ]
+                }
+            }
+            """
+
+    Scenario: I can pass query parameters with a dot
+        Given the request "GET" "/users/1?sport.id=1" will return the json:
+            """
+            [
+                {
+                    "id": 1,
+                    "name": "Zidane"
+                }
+            ]
+            """
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/users/1",
+                    "queryStringParameters": [
+                        {
+                            "name": "sport.id",
+                            "values": ["1"]
+                        }
+                    ]
+                },
+                "httpResponse": {
+                    "body": [
+                        {
+                            "id": 1,
+                            "name": "Zidane"
                         }
                     ]
                 }
