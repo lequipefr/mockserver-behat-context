@@ -9,6 +9,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use Lequipe\MockServer\Exception\Exception;
 use Lequipe\MockServer\Expectation\ExpectationBuilder;
+use Lequipe\MockServer\Expectation\ExpectedRequest;
 use Symfony\Component\HttpClient\HttpClient;
 use TypeError;
 
@@ -353,11 +354,22 @@ class MockServerContext implements Context
      */
     public function iVerify(string $method, string $path, int $times): void
     {
+        $expectedRequest = new ExpectedRequest();
+        $parsedUrl = parse_url($path);
+
+        $expectedRequest
+            ->method($method)
+            ->path($parsedUrl['path'])
+        ;
+
+        if (array_key_exists('query', $parsedUrl)) {
+            $expectedRequest
+                ->addQueryStringParametersFromString($parsedUrl['query'])
+            ;
+        }
+
         $this->client->verify([
-            'httpRequest' => [
-                'method' => $method,
-                'path' => $path,
-            ],
+            'httpRequest' => $expectedRequest->toArray(),
             'times' => [
                 'atLeast' => $times,
                 'atMost' => $times,
