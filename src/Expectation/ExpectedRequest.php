@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Lequipe\MockServer\Expectation;
 
+use Lequipe\MockServer\Utils;
+
+use function array_filter;
+use function is_array;
+
 class ExpectedRequest
 {
     private ?bool $secure = null;
@@ -67,11 +72,11 @@ class ExpectedRequest
      */
     public function addQueryStringParametersFromString(string $queryString): self
     {
-        parse_str($queryString, $params);
+        Utils::parse_str_custom($queryString, $params);
 
         foreach ($params as $name => $value) {
 
-            if (\is_array($value)) {
+            if (is_array($value)) {
                 foreach ($value as $key => $val) {
                     $this->addQueryStringParameter($name."[".$key."]", $val);
                 }
