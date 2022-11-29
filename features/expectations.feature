@@ -323,3 +323,33 @@ Feature: I can send expectations on a mockserver instance.
                 }
             }
             """
+
+    Scenario: I can return a given status code
+        Given the response status code will be 206
+        Given the request "GET" "/users" will return the json:
+            """
+            [
+                {
+                    "id": 1,
+                    "name": "Zidane"
+                }
+            ]
+            """
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/users"
+                },
+                "httpResponse": {
+                    "statusCode": 206,
+                    "body": [
+                        {
+                            "id": 1,
+                            "name": "Zidane"
+                        }
+                    ]
+                }
+            }
+            """
