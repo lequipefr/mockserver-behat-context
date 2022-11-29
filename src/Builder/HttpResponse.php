@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lequipe\MockServer\Expectation;
+namespace Lequipe\MockServer\Builder;
 
-class MockedResponse
+class HttpResponse
 {
     private ?int $statusCode = null;
     private ?array $body = null;

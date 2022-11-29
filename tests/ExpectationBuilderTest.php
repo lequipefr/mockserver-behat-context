@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Lequipe\Test\MockServer;
 
-use Lequipe\MockServer\Expectation\ExpectationBuilder;
+use Lequipe\MockServer\Builder\Expectation;
 use PHPUnit\Framework\TestCase;
 
-class ExpectationBuilderTest extends TestCase
+class ExpectationTest extends TestCase
 {
     public function testExpectation(): void
     {
-        $builder = new ExpectationBuilder();
+        $builder = new Expectation();
 
-        $builder->expectedRequest()
+        $builder->httpRequest()
             ->method('post')
             ->path('api/users')
             ->addHeader('Content', 'application/form-data')
@@ -22,7 +22,7 @@ class ExpectationBuilderTest extends TestCase
             ])
         ;
 
-        $builder->mockedResponse()
+        $builder->httpResponse()
             ->statusCode(201)
             ->bodyJson([
                 'id' => 1,
@@ -55,9 +55,9 @@ class ExpectationBuilderTest extends TestCase
 
     public function testExpectationQueryString(): void
     {
-        $builder = new ExpectationBuilder();
+        $builder = new Expectation();
 
-        $builder->expectedRequest()
+        $builder->httpRequest()
             ->method('get')
             ->path('api/users')
             ->addQueryStringParametersFromString('filter=enabled&site=lequipe')

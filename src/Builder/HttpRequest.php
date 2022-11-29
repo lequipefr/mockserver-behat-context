@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Lequipe\MockServer\Expectation;
+namespace Lequipe\MockServer\Builder;
 
 use Lequipe\MockServer\Utils;
 
+use function array_key_exists;
 use function array_filter;
 use function is_array;
+use function parse_url;
 
-class ExpectedRequest
+class HttpRequest
 {
     private ?bool $secure = null;
     private ?string $method = null;
@@ -25,9 +27,35 @@ class ExpectedRequest
         return $this;
     }
 
+    /**
+     * Expects a path only, do not provide query parameters here.
+     *
+     *  pathWithParameters('/api/users')
+     *
+     * @see \Lequipe\MockServer\Builder\HttpRequest::pathWithParameters() If you want to provide a path like '/api/users?visible=true'
+     * @see \Lequipe\MockServer\Builder\HttpRequest::addQueryStringParameter() If you want to provide query parameters only
+     */
     public function path(string $path): self
     {
         $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * Expects a path containing parameters, i.e
+     *
+     *  pathWithParameters('/api/users?visible=true')
+     */
+    public function pathWithParameters(string $path): self
+    {
+        $parsedUrl = parse_url($path);
+
+        if (array_key_exists('query', $parsedUrl)) {
+            $this->addQueryStringParametersFromString($parsedUrl['query']);
+        }
+
+        $this->path = $parsedUrl['path'];
 
         return $this;
     }
@@ -65,7 +93,7 @@ class ExpectedRequest
      *
      * Example:
      *
-     *      $expectedRequest->addQueryStringParametersFromString('param1=value1&list[]=item1&list[]=item2');
+     *      $httpRequest->addQueryStringParametersFromString('param1=value1&list[]=item1&list[]=item2');
      *
      * @param string $queryString String extracted from parseUri()['query'],
      *                            like: 'param1=value1&list[]=item1&list[]=item2'

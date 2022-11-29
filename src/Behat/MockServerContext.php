@@ -10,8 +10,9 @@ use Behat\Gherkin\Node\PyStringNode;
 use Lequipe\MockServer\Client\MockServerClient;
 use Lequipe\MockServer\Client\MockServerClientInterface;
 use Lequipe\MockServer\Exception\Exception;
-use Lequipe\MockServer\Expectation\ExpectationBuilder;
-use Lequipe\MockServer\Expectation\ExpectedRequest;
+use Lequipe\MockServer\Builder\Expectation;
+use Lequipe\MockServer\Builder\HttpRequest;
+use Lequipe\MockServer\Builder\Verification;
 use TypeError;
 
 class MockServerContext implements Context
@@ -23,7 +24,7 @@ class MockServerContext implements Context
     private bool $shouldResetBefore;
     private bool $shouldResetAfter;
 
-    private ?ExpectationBuilder $currentExpectation = null;
+    private ?Expectation $currentExpectation = null;
 
     /**
      * Pass only url here to simplify configuration in behat.yml
@@ -65,10 +66,10 @@ class MockServerContext implements Context
         return $this->client;
     }
 
-    protected function getCurrentExpectation(): ExpectationBuilder
+    protected function getCurrentExpectation(): Expectation
     {
         if (null === $this->currentExpectation) {
-            $this->currentExpectation = new ExpectationBuilder();
+            $this->currentExpectation = new Expectation();
         }
 
         return $this->currentExpectation;
@@ -146,20 +147,12 @@ class MockServerContext implements Context
     {
         $this->resetMockserverBeforeFirstApiCall();
 
-        $parsedUrl = parse_url($path);
-
-        $this->getCurrentExpectation()->expectedRequest()
+        $this->getCurrentExpectation()->httpRequest()
             ->method($method)
-            ->path($parsedUrl['path'])
+            ->pathWithParameters($path)
         ;
 
-        if (array_key_exists('query', $parsedUrl)) {
-            $this->getCurrentExpectation()->expectedRequest()
-                ->addQueryStringParametersFromString($parsedUrl['query'])
-            ;
-        }
-
-        $this->getCurrentExpectation()->mockedResponse()
+        $this->getCurrentExpectation()->httpResponse()
             ->bodyJson($body)
         ;
 
@@ -198,7 +191,7 @@ class MockServerContext implements Context
      */
     public function iWillReceiveTheHeader(string $name, string $value): void
     {
-        $this->getCurrentExpectation()->expectedRequest()->addHeader($name, $value);
+        $this->getCurrentExpectation()->httpRequest()->addHeader($name, $value);
     }
 
     /**
@@ -219,7 +212,7 @@ class MockServerContext implements Context
      */
     public function iExpectRequestStatusCode(int $statusCode): void
     {
-        $this->getCurrentExpectation()->mockedResponse()->statusCode($statusCode);
+        $this->getCurrentExpectation()->httpResponse()->statusCode($statusCode);
     }
 
     /**
@@ -227,7 +220,7 @@ class MockServerContext implements Context
      */
     public function iWillReceiveTheRawBody(PyStringNode $node): void
     {
-        $this->getCurrentExpectation()->expectedRequest()
+        $this->getCurrentExpectation()->httpRequest()
             ->bodyRaw($node->getRaw())
         ;
     }
@@ -255,7 +248,7 @@ class MockServerContext implements Context
      */
     public function iExpectTheRequestJson(PyStringNode $node): void
     {
-        $this->getCurrentExpectation()->expectedRequest()
+        $this->getCurrentExpectation()->httpRequest()
             ->bodyJson(json_decode($node->getRaw(), true))
         ;
     }
@@ -379,26 +372,15 @@ class MockServerContext implements Context
      */
     public function iVerify(string $method, string $path, int $times): void
     {
-        $expectedRequest = new ExpectedRequest();
-        $parsedUrl = parse_url($path);
+        $verification = new Verification();
 
-        $expectedRequest
-            ->method($method)
-            ->path($parsedUrl['path'])
+        $verification
+            ->exactly($times)
+            ->httpRequest()
+                ->method($method)
+                ->pathWithParameters($path)
         ;
 
-        if (array_key_exists('query', $parsedUrl)) {
-            $expectedRequest
-                ->addQueryStringParametersFromString($parsedUrl['query'])
-            ;
-        }
-
-        $this->client->verify([
-            'httpRequest' => $expectedRequest->toArray(),
-            'times' => [
-                'atLeast' => $times,
-                'atMost' => $times,
-            ],
-        ]);
+        $this->client->verify($verification->toArray());
     }
 }

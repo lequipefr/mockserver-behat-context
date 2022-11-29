@@ -74,19 +74,19 @@ $client->expectation([
 
 ### Builder
 
-Instead of raw arrays, you can use the [expectation builder](./src/Expectation/ExpectationBuilder.php):
+Instead of raw arrays, you can use the [expectation builder](./src/Expectation/Expectation.php):
 
 ``` php
 <?php
 
 use Lequipe\MockServer\MockServerClient;
-use Lequipe\MockServer\Expectation\ExpectationBuilder;
+use Lequipe\MockServer\Builder\Expectation;
 
 $client = new MockServerClient('http://127.0.0.1:1080');
 
-$builder = new ExpectationBuilder();
+$builder = new Expectation();
 
-$builder->expectedRequest()
+$builder->httpRequest()
     ->method('GET')
     ->path('/users/1')
 ;
@@ -103,7 +103,7 @@ $builder->mockedRespone()
 $client->expectation($builder->toArray());
 ```
 
-See other examples in [unit tests](./tests/ExpectationBuilderTest.php).
+See other examples in [unit tests](./tests/ExpectationTest.php).
 
 ### Behat context
 
