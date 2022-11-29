@@ -202,6 +202,27 @@ class MockServerContext implements Context
     }
 
     /**
+     * @Given the response status code will be :statusCode
+     *
+     * Example:
+     *
+     * Given the response status code will be 201
+     * And the request "GET" "/users/1" will return the json:
+     * """
+     * [
+     *   {
+     *      "id": 1,
+     *      "name": "Zidane edited"
+     *   }
+     * ]
+     * """
+     */
+    public function iExpectRequestStatusCode(int $statusCode): void
+    {
+        $this->getCurrentExpectation()->mockedResponse()->statusCode($statusCode);
+    }
+
+    /**
      * @Given I will receive this raw body:
      */
     public function iWillReceiveTheRawBody(PyStringNode $node): void
