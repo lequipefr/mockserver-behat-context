@@ -1,6 +1,6 @@
 # MockServer Behat context
 
-Behat context for [MockServer](https://www.mock-server.com/).
+Php client and behat context for [MockServer](https://www.mock-server.com/).
 
 ## Roadmap
 
@@ -45,7 +45,7 @@ Given the request "GET" "/user/1" will return the json:
 
 ### PHP client
 
-You can use [MockServerClient](./src/MockServerClient.php) as a simple client,
+You can use this library as a simple client,
 and send your expectations as raw arrays, as defined in
 [mockserver swagger api](https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.12.x#/expectation/put_expectation):
 
@@ -74,7 +74,7 @@ $client->expectation([
 
 ### Builder
 
-Instead of raw arrays, you can use the [expectation builder](./src/Expectation/Expectation.php):
+Instead of raw arrays, you can use the expectation builder and let your IDE autocomplete:
 
 ``` php
 <?php
@@ -84,14 +84,14 @@ use Lequipe\MockServer\Builder\Expectation;
 
 $client = new MockServerClient('http://127.0.0.1:1080');
 
-$builder = new Expectation();
+$expectation = new Expectation();
 
-$builder->httpRequest()
+$expectation->httpRequest()
     ->method('GET')
     ->path('/users/1')
 ;
 
-$builder->mockedRespone()
+$expectation->httpResponse()
     ->bodyJson([
         [
             'id' => 1,
@@ -100,27 +100,21 @@ $builder->mockedRespone()
     ])
 ;
 
-$client->expectation($builder->toArray());
+$client->expectation($expectation->toArray());
 ```
-
-See other examples in [unit tests](./tests/ExpectationTest.php).
 
 ### Behat context
 
-This library provide a behat context, for example here is some phrases you can use:
+The main purpose of this library is to provide a behat context,
+for example here is some phrases you can use:
 
 ``` cucumber
 Feature: My feature
 
     Scenario: My scenario
 
-        Given I will receive this json payload:
-            """
-            {
-                "name": "Zidane"
-            }
-            """
-        Given I will receive the header "Content-Type" "application/json"
+        Given the request "PUT" "/users/1/flush" will return status code 204
+
         Given the request "GET" "/users/1" will return the json:
             """
             [
@@ -131,13 +125,14 @@ Feature: My feature
             ]
             """
 
-    Scenario: Other scenario
+        Given the request "GET" "/cats/1" will return the json from file "stubs/cats.json"
 
-        Given the request "GET" "/users/1" will return the json from file "stubs/payload.json"
+        # ...
 
+        Then the request "GET" "/api/users" should have been called exactly 1 times
 ```
 
-Check **all available phrases and examples** in [features/expectations.feature](./features/expectations.feature).
+Check **all available phrases and examples** in [features/](./features).
 
 ## Configuration example
 
