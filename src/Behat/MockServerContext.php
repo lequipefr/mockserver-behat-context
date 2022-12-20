@@ -11,7 +11,6 @@ use Lequipe\MockServer\Client\MockServerClient;
 use Lequipe\MockServer\Client\MockServerClientInterface;
 use Lequipe\MockServer\Exception\Exception;
 use Lequipe\MockServer\Builder\Expectation;
-use Lequipe\MockServer\Builder\HttpRequest;
 use Lequipe\MockServer\Builder\Verification;
 use TypeError;
 
@@ -20,9 +19,6 @@ class MockServerContext implements Context
     protected MockServerClientInterface $client;
 
     protected string $featurePath;
-
-    private bool $shouldResetBefore;
-    private bool $shouldResetAfter;
 
     private ?Expectation $currentExpectation = null;
 
@@ -91,11 +87,19 @@ class MockServerContext implements Context
 
     /**
      * @BeforeScenario
+     *
+     * Reset mockserver before every scenario.
+     * Prevent having extra expectation from previus scenario,
+     * or keeping expectation in next scenario that does not use mockserver,
+     * and keep mockserver state at the end of scenario to allow debugging with mockserver dashboard.
+     *
+     * Other solutions were:
+     *  - reset only before sending first expectation, but have unwanted behavior on next scenarios not using mockserver
+     *  - reset only after scenario if at least one expectation sent, but harder to debug because dashboard is then empty
      */
     public function beforeScenario(): void
     {
-        $this->shouldResetBefore = true;
-        $this->shouldResetAfter = false;
+        $this->client->reset();
         $this->currentExpectation = null;
     }
 
@@ -106,30 +110,6 @@ class MockServerContext implements Context
     {
         if (null !== $this->currentExpectation) {
             throw new Exception('An expectation is currently building and has not been sent');
-        }
-
-        if ($this->shouldResetAfter) {
-            $this->client->reset();
-            $this->shouldResetAfter = false;
-        }
-    }
-
-    /**
-     * /!\ if you create custom phrases that send expectation,
-     *     use this method to make sure to clear previous expectation if needed.
-     *
-     * Should be called before any call to api,
-     * to make sure to reset mocks from previous scenario
-     * and reset expectations after scenario if necessary,
-     * but only if scenario is using mockserver.
-     */
-    protected function resetMockserverBeforeFirstApiCall(): void
-    {
-        $this->shouldResetAfter = true;
-
-        if ($this->shouldResetBefore) {
-            $this->client->reset();
-            $this->shouldResetBefore = false;
         }
     }
 
@@ -145,8 +125,6 @@ class MockServerContext implements Context
 
     protected function theRequestOnApiWillReturnBody(string $method, string $path, array $body): void
     {
-        $this->resetMockserverBeforeFirstApiCall();
-
         $this->getCurrentExpectation()->httpRequest()
             ->method($method)
             ->pathWithParameters($path)
@@ -168,7 +146,30 @@ class MockServerContext implements Context
     {
         $this->client->reset();
 
-        $this->shouldResetBefore = false;
+        $this->hasBeenResetBefore = true;
+    }
+
+    /**
+     * Just returns an empty response with a given status code.
+     *
+     * @Given the request :method :path will return status code :statusCode
+     *
+     * Example:
+     *
+     * Given the request "PUT" "/users/1/flush" will return status code 204
+     */
+    public function iExpectMethodPathAndGetStatusCode(string $method, string $path, int $statusCode): void
+    {
+        $this->getCurrentExpectation()->httpRequest()
+            ->method($method)
+            ->pathWithParameters($path)
+        ;
+
+        $this->getCurrentExpectation()->httpResponse()
+            ->statusCode($statusCode)
+        ;
+
+        $this->client->expectation($this->dumpCurrentExpectation());
     }
 
     /**
@@ -286,8 +287,6 @@ class MockServerContext implements Context
      */
     public function iExpectThisRequest(PyStringNode $node): void
     {
-        $this->resetMockserverBeforeFirstApiCall();
-
         $expectation = json_decode($node->getRaw(), true);
 
         $this->client->expectation($expectation);
@@ -365,6 +364,7 @@ class MockServerContext implements Context
     /**
      * @Then the request :method :path should have been called exactly :times times
      *
+     * Cannot be used alone, must verify that an *existing* expectation has been called.
      * Example:
      *
      *  When I send a "PUT" request on "/users/1"

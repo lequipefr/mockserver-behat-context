@@ -1,5 +1,21 @@
 Feature: I can send expectations on a mockserver instance.
 
+    Scenario: Expectation that a request on a given path will simply return a given status code.
+
+        Given the request "PUT" "/users/1/flush" will return status code 204
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "PUT",
+                    "path": "/users/1/flush"
+                },
+                "httpResponse": {
+                    "statusCode": 204
+                }
+            }
+            """
+
     Scenario: Expectation that a request on a given path will return given json response.
 
         Given the request "GET" "/users/1" will return the json:

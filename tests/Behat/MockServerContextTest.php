@@ -16,81 +16,6 @@ class MockServerContextTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testResetIsCalledOnceOnApiCall()
-    {
-        $client = $this->prophesize(MockServerClient::class);
-
-        $client
-            ->reset()
-            ->shouldBeCalledTimes(1)
-        ;
-
-        $client
-            ->expectation(Argument::any())
-        ;
-
-        $context = new MockServerContext($client->reveal());
-
-        $context->beforeScenario();
-        $context->theRequestOnApiWillReturnJson('get', '/users', new PyStringNode(['[]'], 0));
-        $context->theRequestOnApiWillReturnJson('get', '/users/1', new PyStringNode(['{}'], 0));
-    }
-
-    public function testResetIsNotCalledIfNoApiCall()
-    {
-        $client = $this->prophesize(MockServerClient::class);
-
-        $client
-            ->reset()
-            ->shouldBeCalledTimes(0)
-        ;
-
-        $context = new MockServerContext($client->reveal());
-
-        $context->beforeScenario();
-        $context->afterScenario();
-    }
-
-    public function testResetIsNotCalledOnTheEndOfScenatioIfNotNecessary()
-    {
-        $client = $this->prophesize(MockServerClient::class);
-
-        $client
-            ->reset()
-            ->shouldBeCalledTimes(0)
-        ;
-
-        $client
-            ->expectation(Argument::any())
-        ;
-
-        $context = new MockServerContext($client->reveal());
-
-        $context->beforeScenario();
-        $context->afterScenario();
-    }
-
-    public function testResetIsCalledOnTheEndOfScenatioIfNecessary()
-    {
-        $client = $this->prophesize(MockServerClient::class);
-
-        $client
-            ->reset()
-            ->shouldBeCalledTimes(2)
-        ;
-
-        $client
-            ->expectation(Argument::any())
-        ;
-
-        $context = new MockServerContext($client->reveal());
-
-        $context->beforeScenario();
-        $context->theRequestOnApiWillReturnJson('get', '/users', new PyStringNode(['[]'], 0));
-        $context->theRequestOnApiWillReturnJson('get', '/users/1', new PyStringNode(['{}'], 0));
-        $context->afterScenario();
-    }
-
     /**
      * Functions like "iWillReceiveTheHeader" add request elements to assert
      * from the next expectation, but the expectation is not send until
@@ -103,18 +28,16 @@ class MockServerContextTest extends TestCase
     {
         $client = $this->prophesize(MockServerClient::class);
 
-        $client
-            ->expectation(Argument::any())
-        ;
+        $client->reset();
+        $client->expectation(Argument::any());
 
         $context = new MockServerContext($client->reveal());
-
-        $context->beforeScenario();
-        $context->iWillReceiveTheHeader('Header', 'value');
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('An expectation is currently building and has not been sent');
 
+        $context->beforeScenario();
+        $context->iWillReceiveTheHeader('Header', 'value');
         $context->afterScenario();
     }
 }
