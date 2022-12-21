@@ -33,8 +33,6 @@ class Expectation
         return array_filter([
             'httpRequest' => $this->httpRequest->toArray(),
             'httpResponse' => $this->httpResponse->toArray(),
-        ], function ($v) {
-            return null !== $v;
-        });
+        ]);
     }
 }

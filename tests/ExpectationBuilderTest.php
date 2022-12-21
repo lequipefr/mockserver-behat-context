@@ -74,7 +74,6 @@ class ExpectationTest extends TestCase
                     ['name' => 'site', 'values' => ['lequipe']],
                 ],
             ],
-            'httpResponse' => [],
         ], $parameters);
     }
 }

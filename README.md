@@ -4,7 +4,9 @@ Php client and behat context for [MockServer](https://www.mock-server.com/).
 
 ## Roadmap
 
-- Handle all cases in the "Client Code Examples" section in <https://mock-server.com/mock_server/mockserver_clients.html>
+- Handle all cases in sections:
+    - <https://mock-server.com/mock_server/mockserver_clients.html>
+    - <https://www.mock-server.com/mock_server/creating_expectations.html>
 - Remove the Lequipe custom context `src/Lequipe/`
 - Move and publish on github as an open source library
 - Reference this PHP client in Mockserver library, and add examples in <https://mock-server.com/mock_server/mockserver_clients.html>

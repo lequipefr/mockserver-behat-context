@@ -11,6 +11,10 @@ use function array_filter;
 use function is_array;
 use function parse_url;
 
+/**
+ * A request matcher.
+ * Can match or not a request received by MockServer.
+ */
 class HttpRequest
 {
     private ?bool $secure = null;
@@ -18,6 +22,7 @@ class HttpRequest
     private ?string $path = null;
     private ?array $queryStringParameters = null;
     private ?array $headers = null;
+    private ?array $cookies = null;
     private ?array $body = null;
 
     public function method(string $method): self
@@ -69,6 +74,16 @@ class HttpRequest
         $this->headers[] = [
             'name' => $name,
             'values' => [$value],
+        ];
+
+        return $this;
+    }
+
+    public function addCookie(string $name, string $value): self
+    {
+        $this->cookies[] = [
+            'name' => $name,
+            'value' => $value,
         ];
 
         return $this;
@@ -147,6 +162,7 @@ class HttpRequest
             'method' => $this->method,
             'path' => $this->path,
             'headers' => $this->headers,
+            'cookies' => $this->cookies,
             'body' => $this->body,
             'queryStringParameters' => $this->queryStringParameters,
         ], function ($v) {
