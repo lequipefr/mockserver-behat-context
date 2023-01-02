@@ -290,6 +290,52 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
+    Scenario: I can pass query parameter with deeper array
+        Given the request "GET" "/users/search?level0=a&level1[x]=b&level2[x][y]=c&level3[x][y][z]=d" will return the json:
+            """
+            [
+                {
+                    "id": 1,
+                    "name": "Zidane"
+                }
+            ]
+            """
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/users/search",
+                    "queryStringParameters": [
+                        {
+                            "name": "level0",
+                            "values": ["a"]
+                        },
+                        {
+                            "name": "level1[x]",
+                            "values": ["b"]
+                        },
+                        {
+                            "name": "level2[x][y]",
+                            "values": ["c"]
+                        },
+                        {
+                            "name": "level3[x][y][z]",
+                            "values": ["d"]
+                        }
+                    ]
+                },
+                "httpResponse": {
+                    "body": [
+                        {
+                            "id": 1,
+                            "name": "Zidane"
+                        }
+                    ]
+                }
+            }
+            """
+
     Scenario: I can pass query parameters with a dot
         Given the request "GET" "/users/1?sport.id=1" will return the json:
             """

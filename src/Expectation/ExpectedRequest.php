@@ -7,7 +7,9 @@ namespace Lequipe\MockServer\Expectation;
 use Lequipe\MockServer\Utils;
 
 use function array_filter;
-use function is_array;
+use function array_slice;
+use function is_string;
+use function count;
 
 class ExpectedRequest
 {
@@ -74,19 +76,35 @@ class ExpectedRequest
     {
         Utils::parse_str_custom($queryString, $params);
 
-        foreach ($params as $name => $value) {
-
-            if (is_array($value)) {
-                foreach ($value as $key => $val) {
-                    $this->addQueryStringParameter($name."[".$key."]", $val);
-                }
-                continue;
-            }
-
-            $this->addQueryStringParameter($name, $value);
-        }
+        $this->recursiveAddQueryString($params);
 
         return $this;
+    }
+
+    /**
+     * Handle deep arrays in query strings, like '?param[x][y][z]=value'
+     *
+     * @param array $params Result from parse_str() function
+     * @param string[] $tree Current array path, like ['param', 'x', 'y'] Let empty for root.
+     */
+    private function recursiveAddQueryString(array $params, array $tree = []): void
+    {
+        foreach ($params as $name => $value) {
+            $currentTree = $tree;
+            $currentTree[] = $name;
+
+            if (is_string($value)) {
+                $parameterName = $currentTree[0];
+
+                if (count($currentTree) > 1) {
+                    $parameterName .= '[' . join('][', array_slice($currentTree, 1)) . ']';
+                }
+
+                $this->addQueryStringParameter($parameterName, $value);
+            } else {
+                $this->recursiveAddQueryString($value, $currentTree);
+            }
+        }
     }
 
     public function bodyRaw(string $body): self
