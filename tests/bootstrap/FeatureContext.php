@@ -56,6 +56,10 @@ class FeatureContext implements Context
         $expected = json_decode($string->__toString(), true);
         $actuals = $this->client->getExpectations();
 
+        if (null === $expected) {
+            throw new DomainException('Error while parsing json');
+        }
+
         assertEquals(1, count($actuals), 'Mockserver received exactly 1 expectation');
         assertEquals($expected, $actuals[0], 'Mockserver has received the expected expectation');
     }
