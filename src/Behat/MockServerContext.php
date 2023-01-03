@@ -145,8 +145,6 @@ class MockServerContext implements Context
     public function iResetMocks(): void
     {
         $this->client->reset();
-
-        $this->hasBeenResetBefore = true;
     }
 
     /**
