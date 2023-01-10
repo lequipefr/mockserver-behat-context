@@ -11,11 +11,13 @@ class Expectation
 {
     private HttpRequest $httpRequest;
     private HttpResponse $httpResponse;
+    private Times $times;
 
     public function __construct()
     {
         $this->httpRequest = new HttpRequest();
         $this->httpResponse = new HttpResponse();
+        $this->times = new Times();
     }
 
     public function httpRequest(): HttpRequest
@@ -28,11 +30,17 @@ class Expectation
         return $this->httpResponse;
     }
 
+    public function times(): Times
+    {
+        return $this->times;
+    }
+
     public function toArray(): array
     {
         return array_filter([
             'httpRequest' => $this->httpRequest->toArray(),
             'httpResponse' => $this->httpResponse->toArray(),
+            'times' => $this->times->toArray(),
         ]);
     }
 }
