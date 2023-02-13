@@ -1,6 +1,6 @@
-Feature: I can send expectations on a mockserver instance.
+Feature: Expectations
 
-    Scenario: Expectation that a request on a given path will simply return a given status code.
+    Scenario: Simply return a given status code
 
         Given the request "PUT" "/users/1/flush" will return status code 204
         Then mockserver should receive the following expectation only:
@@ -16,7 +16,7 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
-    Scenario: Expectation that a request on a given path will return given json response.
+    Scenario: Return a json response
 
         Given the request "GET" "/users/1" will return the json:
             """
@@ -46,7 +46,7 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Expectation that a request on a given path will return given json response from file.
+    Scenario: Return json response from file
         The file path is relative to your current ".feature" file.
 
         Given the request "GET" "/users/1" will return the json from file "stubs/payload.json"
@@ -70,7 +70,7 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Expectation that a request on a given path will return given raw body from file.
+    Scenario: Return raw body from file
         The file path is relative to your current ".feature" file.
 
         Given the request "GET" "/Football/article.html" will return body from file "stubs/article.html"
@@ -91,7 +91,7 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Expect a given header in the request.
+    Scenario: Expect a given header in the request
 
         Given I will receive the header "Content-Type" "application/json"
         And the request "GET" "/users/1" will return the json:
@@ -130,7 +130,7 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Expect to receive a given json in the request.
+    Scenario: Expect to receive a given json in the request
         Not to mismatch with "I will receive this raw body"
         which takes a plain text body instead, and won't interpret the json.
 
@@ -167,7 +167,7 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Expect to receive a given raw body in the request.
+    Scenario: Expect to receive a given raw body in the request
 
         Given I will receive this raw body:
             """
@@ -200,9 +200,10 @@ Feature: I can send expectations on a mockserver instance.
             """
 
 
-    Scenario: Raw expectation.
+    Scenario: Raw expectation
         Sendind a expectation in the format directly defined by Mockserver
         and described here: https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.12.x#/expectation/put_expectation
+
         Useful to send a fully custom expectation that no behat phrases defined in this context can do.
 
         Given I expect this request:
@@ -260,7 +261,7 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
-    Scenario: I can pass query parameter in the request path
+    Scenario: Query parameters in the request path
         Given the request "GET" "/users/1?param=val&scopes[]=basics&scopes[]=optins&array[key]=val" will return the json:
             """
             [
@@ -306,7 +307,7 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
-    Scenario: I can pass query parameter with deeper array
+    Scenario: Query parameters with deeper array
         Given the request "GET" "/users/search?level0=a&level1[x]=b&level2[x][y]=c&level3[x][y][z]=d" will return the json:
             """
             [
@@ -352,7 +353,9 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
-    Scenario: I can pass query parameters with a dot
+    Scenario: Query parameters with a dot
+        PHP convert dots to underscores if using parse_str(), which is not wanted with mockserver.
+
         Given the request "GET" "/users/1?sport.id=1" will return the json:
             """
             [
@@ -386,7 +389,7 @@ Feature: I can send expectations on a mockserver instance.
             }
             """
 
-    Scenario: I can return a given status code
+    Scenario: Return a given status code
         Given the response status code will be 206
         Given the request "GET" "/users" will return the json:
             """

@@ -34,7 +34,7 @@ default:
 Now, in your behat tests, you should be able to mock the webservices your project depends to, with:
 
 ```
-Given the request "GET" "/user/1" will return the json:
+Given the request "GET" "/users/1" will return the json:
     """
     {
         "id": 1,
@@ -45,9 +45,13 @@ Given the request "GET" "/user/1" will return the json:
 
 ## Usage
 
+### Behat context
+
+See [all available behat phrases you can use](docs/behat-phrases.md).
+
 ### PHP client
 
-You can use this library as a simple client,
+You can also use this library as a simple PHP client,
 and send your expectations as raw arrays, as defined in
 [mockserver swagger api](https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi/5.12.x#/expectation/put_expectation):
 
@@ -105,36 +109,6 @@ $expectation->httpResponse()
 $client->expectation($expectation->toArray());
 ```
 
-### Behat context
-
-The main purpose of this library is to provide a behat context,
-for example here is some phrases you can use:
-
-``` cucumber
-Feature: My feature
-
-    Scenario: My scenario
-
-        Given the request "PUT" "/users/1/flush" will return status code 204
-
-        Given the request "GET" "/users/1" will return the json:
-            """
-            [
-                {
-                    "id": 1,
-                    "name": "Zidane edited"
-                }
-            ]
-            """
-
-        Given the request "GET" "/cats/1" will return the json from file "stubs/cats.json"
-
-        # ...
-
-        Then the request "GET" "/api/users" should have been called exactly 1 times
-```
-
-Check **all available phrases and examples** in [features/](./features).
 
 ## Configuration example
 
@@ -211,6 +185,61 @@ any `*.mockserver` requests will hit your localhost,
 your mockserver instance will receive all requests with a different hostname
 that you can match with the `httpRequest.headers[name = 'Host']` parameter in expectation.
 
+## FAQ
+
+### I am still getting 404's when my application under test is trying to query mocked external service
+
+For all trouble you get between your application and mockserver, you should use MockServer UI.
+
+It is already installed and accessible here: <http://127.0.0.1:1080/mockserver/dashboard>.
+
+If not, check [MockServer UI documentation](https://www.mock-server.com/mock_server/mockserver_ui.html).
+
+The UI displays useful information:
+
+- Active expectations, the mocks received,
+- Received Requests, the requests your tested application have sent to mockserver instead of the real external service
+- Log messages, all mocks, requests received, did the mock have been sent, if not, why...
+
+If you get 404's, you may check all this points:
+
+- Did mockserver have received the mock ?
+
+In "Active Expectations" you must see the mock you defined in your behat test.
+If not, check if the mockserver url in `behat.yml` valid and used:
+
+``` yml
+                - Lequipe\MockServer\Behat\MockServerContext:
+                    mockServer: 'http://127.0.0.1:1080'
+```
+
+- Did the appplication called mockserver
+
+In "Received Requests", you must see the request sent by your tested application.
+If not, check where is sent the request then. You should configure your application
+to use mockserver as base host instead the external service, something like:
+
+```
+# in .env file, real service:
+USERS_API=https://users-api.local
+
+# .env.test file, mockserver:
+USERS_API=https://127.0.0.1:1080
+```
+
+- Did the request matched the mock
+
+If "Active Expectations" and "Received Requests" contains your mock and a received request,
+did the request matched the mock ?
+
+Mockserver can contains multiple mocks and will response with the mock
+only if path, headers... matches.
+
+To check that, in "Log Messages" section, you should see `MATCHED_EXPECTATION`.
+If not, check the log line about the received request, it will tell you with the request didn't matched the mock.
+
+Sometimes it didn't match just because slash in path is like `api/...` instead of `/api/...`.
+
 ## Develop
 
 Running tests:
@@ -219,6 +248,16 @@ Running tests:
 vendor/bin/phpunit
 vendor/bin/behat
 ```
+
+If new behat phrases are added, add a functional test in `features/`,
+and once all tests passes, run:
+
+``` bash
+php rebuild-features-to-doc.php
+```
+
+to automatically update doc in [docs/behat-phrases.md](docs/behat-phrases.md)
+with this new behat phrase.
 
 ## License
 

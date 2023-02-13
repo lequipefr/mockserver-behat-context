@@ -1,6 +1,9 @@
-Feature: I can verify request have been received by mockserver.
+Feature: Verifications
 
-    Scenario: I can verify that a simple request has been sent.
+    Verifications phrases are sent after test has been done,
+    to assert that a request has actually been sent by the tested application.
+
+    Scenario: Verify that a simple request has been sent
 
         Given the request "GET" "/api/users" should have been called exactly 1 times
 
@@ -18,7 +21,7 @@ Feature: I can verify request have been received by mockserver.
             }
             """
 
-    Scenario: I can verify that a request with query parameters has been sent.
+    Scenario: Verify that a request with query parameters has been sent.
 
         Given the request "GET" "/api/users?active=yes&gender=F&sport.id=1" should have been called exactly 1 times
 
