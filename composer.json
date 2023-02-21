@@ -1,5 +1,5 @@
 {
-    "name": "lequipe/mockserver-behat-context",
+    "name": "lequipefr/mockserver-behat-context",
     "description": "Behat context for MockServer.",
     "type": "library",
     "license": "MIT",
