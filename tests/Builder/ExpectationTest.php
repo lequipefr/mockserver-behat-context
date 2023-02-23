@@ -142,6 +142,49 @@ class ExpectationTest extends TestCase
         ], $expectation->toArray());
     }
 
+    /**
+     * Mockserver documentation example,
+     * "create expectation"
+     */
+    public function testDocCreateExpectation(): void
+    {
+        $expectation = new Expectation();
+
+        $expectation->httpRequest()
+            ->method('get')
+            ->pathWithParameters('/view/cart?cartId=055CA455-1DF7-45BB-8535-4F83E7266092')
+            ->addCookie('session', '4930456C-C718-476F-971F-CB8E047AB349')
+        ;
+
+        $expectation->httpResponse()
+            ->body('some_response_body')
+        ;
+
+        $this->assertSameArray([
+            'httpRequest' => [
+                'method' => 'get',
+                'path' => '/view/cart',
+                'queryStringParameters' => [
+                    [
+                        'name' => 'cartId',
+                        'values' => [
+                            '055CA455-1DF7-45BB-8535-4F83E7266092',
+                        ],
+                    ],
+                ],
+                'cookies' => [
+                    [
+                        'name' => 'session',
+                        'value' => '4930456C-C718-476F-971F-CB8E047AB349',
+                    ],
+                ],
+            ],
+            'httpResponse' => [
+                'body' => 'some_response_body',
+            ],
+        ], $expectation->toArray());
+    }
+
     private function assertSameArray(array $expected, array $actual, string $message = ''): void
     {
         self::ksortDeep($expected);

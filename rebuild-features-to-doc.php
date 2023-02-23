@@ -33,6 +33,7 @@ $separator = PHP_EOL . PHP_EOL;
 $mockserverPayloadPhrases = [
     'mockserver should receive the following expectation only:' => 'Payload sent to mockserver endpoint `PUT /expectation`:',
     'mockserver should receive the following verification only:' => 'Payload sent to mockserver endpoint `PUT /verify`:',
+    'mockserver should have been reset' => 'Mockserver is reset.',
 ];
 
 $output .= '# Behat phrases' . $separator;
@@ -63,11 +64,11 @@ foreach (glob($featuresFiles) as $featureFile) {
 
         foreach ($scenario->getSteps() as $step) {
             if (array_key_exists($step->getText(), $mockserverPayloadPhrases)) {
-                $pyStringNode = $step->getArguments()[0];
+                $pyStringNode = $step->getArguments()[0] ?? null;
+                $mockserverPayloadInfo = $mockserverPayloadPhrases[$step->getText()];
 
                 if ($pyStringNode instanceof PyStringNode) {
                     $mockserverPayload = $pyStringNode->getRaw();
-                    $mockserverPayloadInfo = $mockserverPayloadPhrases[$step->getText()];
                 }
 
                 continue;
@@ -84,8 +85,11 @@ foreach (glob($featuresFiles) as $featureFile) {
 
         $output .= '``` cucumber' . PHP_EOL . $codeblock . '```' . $separator;
 
-        if ($mockserverPayload) {
+        if ($mockserverPayloadInfo) {
             $output .= $mockserverPayloadInfo . $separator;
+        }
+
+        if ($mockserverPayload) {
             $output .= '``` json' . PHP_EOL . $mockserverPayload . PHP_EOL . '```' . $separator;
         }
     }

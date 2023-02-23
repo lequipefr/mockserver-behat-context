@@ -77,6 +77,20 @@ class FeatureContext implements Context
     }
 
     /**
+     * @Then mockserver should have been reset
+     */
+    public function mockserverShouldHaveBeenResetted(): void
+    {
+        assertEquals(
+            1,
+            $this->client->getResetCallsCount()
+                - 1 // do not count the initial reset, called before the expectation
+            ,
+            'Mockserver should have been reset',
+        );
+    }
+
+    /**
      * @Then print expectations
      */
     public function printExpectations(): void

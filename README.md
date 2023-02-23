@@ -5,7 +5,7 @@ Php client and behat context for [MockServer](https://www.mock-server.com/).
 ## Install
 
 ``` bash
-composer require --dev lequipe/mockserver-behat-context
+composer require --dev lequipefr/mockserver-behat-context
 ```
 
 Then add a context in your `behat.yml`, with the url to your local MockServer instance:
@@ -96,7 +96,7 @@ $expectation->httpResponse()
     ])
 ;
 
-$client->expectation($expectation->toArray());
+$client->expectation($expectation);
 ```
 
 
@@ -230,24 +230,9 @@ If not, check the log line about the received request, it will tell you with the
 
 Sometimes it didn't match just because slash in path is like `api/...` instead of `/api/...`.
 
-## Develop
+## Contributing
 
-Running tests:
-
-``` bash
-vendor/bin/phpunit
-vendor/bin/behat
-```
-
-If new behat phrases are added, add a functional test in `features/`,
-and once all tests passes, run:
-
-``` bash
-php rebuild-features-to-doc.php
-```
-
-to automatically update doc in [docs/behat-phrases.md](docs/behat-phrases.md)
-with this new behat phrase.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

@@ -194,6 +194,26 @@ class MockServerContext implements Context
     }
 
     /**
+     * Set an expected cookie in request in order to send the mock.
+     *
+     * @Given I will receive the cookie :name :value
+     *
+     * Example:
+     *
+     * Given I will receive the cookie "session" "abc123"
+     * And the request "GET" "/my-profile" will return the json:
+     * """
+     * {
+     *  "account": 42
+     * }
+     * """
+     */
+    public function iWillReceiveTheCookie(string $name, string $value): void
+    {
+        $this->getCurrentExpectation()->httpRequest()->addCookie($name, $value);
+    }
+
+    /**
      * @Given the response status code will be :statusCode
      *
      * Example:
@@ -291,6 +311,30 @@ class MockServerContext implements Context
     }
 
     /**
+     * @Given the request :method :path will return:
+     *
+     * Example:
+     *
+     * Given the request "GET" "/index" will return:
+     * """
+     * <html><body><p>Hello</p></body></html>
+     * """
+     */
+    public function theRequestOnApiWillReturnRawBody(string $method, string $path, PyStringNode $node): void
+    {
+        $this->getCurrentExpectation()->httpRequest()
+            ->method($method)
+            ->pathWithParameters($path)
+        ;
+
+        $this->getCurrentExpectation()->httpResponse()
+            ->body($node->getRaw())
+        ;
+
+        $this->client->expectation($this->dumpCurrentExpectation());
+    }
+
+    /**
      * @Given the request :method :path will return body from file :filename
      *
      * Example:
@@ -331,7 +375,7 @@ class MockServerContext implements Context
             throw new Exception('Error while parsing json.');
         }
 
-        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($node->getRaw(), true));
+        $this->theRequestOnApiWillReturnBody($method, $path, $json);
     }
 
     /**
@@ -356,7 +400,7 @@ class MockServerContext implements Context
             throw new Exception('Error while parsing json from file "' . $fullFilename . '".');
         }
 
-        $this->theRequestOnApiWillReturnBody($method, $path, json_decode($content, true));
+        $this->theRequestOnApiWillReturnBody($method, $path, $json);
     }
 
     /**

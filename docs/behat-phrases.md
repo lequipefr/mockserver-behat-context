@@ -82,6 +82,70 @@ Payload sent to mockserver endpoint `PUT /expectation`:
 }
 ```
 
+### Return raw body
+
+``` cucumber
+Given the request "GET" "/index" will return:
+"""
+<html><body><p>Hello</p></body></html>
+"""
+```
+
+Payload sent to mockserver endpoint `PUT /expectation`:
+
+``` json
+{
+    "httpRequest": {
+        "method": "GET",
+        "path": "/index"
+    },
+    "httpResponse": {
+        "body": "<html><body><p>Hello</p></body></html>"
+    }
+}
+```
+
+### Return raw body with parameters and a cookie
+
+
+The first phrase `i will ...` does not send the expectation.
+It just prefill the expectation, and will be sent later
+in the second phrase `the request ... will return`
+
+``` cucumber
+Given I will receive the cookie "session" "4930456C-C718-476F-971F-CB8E047AB349"
+And the request "GET" "/view/cart?cartId=055CA455-1DF7-45BB-8535-4F83E7266092" will return:
+"""
+some_response_body
+"""
+```
+
+Payload sent to mockserver endpoint `PUT /expectation`:
+
+``` json
+{
+    "httpRequest": {
+        "method": "GET",
+        "path": "/view/cart",
+        "queryStringParameters": [
+            {
+                "name": "cartId",
+                "values": ["055CA455-1DF7-45BB-8535-4F83E7266092"]
+            }
+        ],
+        "cookies": [
+            {
+                "name": "session",
+                "value": "4930456C-C718-476F-971F-CB8E047AB349"
+            }
+        ]
+    },
+    "httpResponse": {
+        "body": "some_response_body"
+    }
+}
+```
+
 ### Return raw body from file
 
 The file path is relative to your current ".feature" file.
@@ -468,6 +532,18 @@ Payload sent to mockserver endpoint `PUT /expectation`:
     }
 }
 ```
+
+## Reset
+
+### Reset all expectations.
+
+Mockerver is already reset before all scenarios though.
+
+``` cucumber
+Given I reset mocks
+```
+
+Mockserver is reset.
 
 ## Verifications
 

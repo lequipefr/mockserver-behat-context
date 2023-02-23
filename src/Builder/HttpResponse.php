@@ -11,7 +11,12 @@ namespace Lequipe\MockServer\Builder;
 class HttpResponse
 {
     private ?int $statusCode = null;
-    private ?array $body = null;
+
+    /**
+     * @var null|array|string
+     */
+    private $body = null;
+
     private ?array $cookies = null;
 
     public function statusCode(int $statusCode): self

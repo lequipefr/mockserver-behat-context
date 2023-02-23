@@ -14,6 +14,7 @@ class TraceableMockServerClient implements MockServerClientInterface
 {
     private array $expectations = [];
     private array $verifications = [];
+    private int $resetCallsCount = 0;
 
     /**
      * {@inheritDoc}
@@ -46,5 +47,18 @@ class TraceableMockServerClient implements MockServerClientInterface
      */
     public function reset(): void
     {
+        $this->expectations = [];
+        $this->verifications = [];
+        ++$this->resetCallsCount;
+    }
+
+    public function getResetCallsCount(): int
+    {
+        return $this->resetCallsCount;
+    }
+
+    public function resetResetCallsCount(): void
+    {
+        $this->resetCallsCount = 0;
     }
 }

@@ -70,6 +70,65 @@ Feature: Expectations
             """
 
 
+    Scenario: Return raw body
+
+        Given the request "GET" "/index" will return:
+            """
+            <html><body><p>Hello</p></body></html>
+            """
+
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/index"
+                },
+                "httpResponse": {
+                    "body": "<html><body><p>Hello</p></body></html>"
+                }
+            }
+            """
+
+
+    Scenario: Return raw body with parameters and a cookie
+
+        The first phrase `i will ...` does not send the expectation.
+        It just prefill the expectation, and will be sent later
+        in the second phrase `the request ... will return`
+
+        Given I will receive the cookie "session" "4930456C-C718-476F-971F-CB8E047AB349"
+        And the request "GET" "/view/cart?cartId=055CA455-1DF7-45BB-8535-4F83E7266092" will return:
+            """
+            some_response_body
+            """
+
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/view/cart",
+                    "queryStringParameters": [
+                        {
+                            "name": "cartId",
+                            "values": ["055CA455-1DF7-45BB-8535-4F83E7266092"]
+                        }
+                    ],
+                    "cookies": [
+                        {
+                            "name": "session",
+                            "value": "4930456C-C718-476F-971F-CB8E047AB349"
+                        }
+                    ]
+                },
+                "httpResponse": {
+                    "body": "some_response_body"
+                }
+            }
+            """
+
+
     Scenario: Return raw body from file
         The file path is relative to your current ".feature" file.
 
