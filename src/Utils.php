@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lequipe\MockServer;
 
+use InvalidArgumentException;
+
 use function bin2hex;
 use function parse_str;
 use function preg_replace_callback;
@@ -25,5 +27,28 @@ class Utils
         parse_str($string, $values);
 
         $result = array_combine(array_map('hex2bin', array_keys($values)), $values);
+    }
+
+    /**
+     * Check that $value is either an array or an instance of $class.
+     * Then return $value as array.
+     *
+     * @param array|object $value
+     * @param string $class Class to builder object that has a toArray() method
+     */
+    public static function toArray($value, string $class): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_subclass_of($value, $class)) {
+            return $value->toArray();
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Expected array, or an instance of "%s".',
+            $class,
+        ));
     }
 }

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Lequipe\Test\MockServer;
 
+use Lequipe\MockServer\Builder\Expectation;
+use Lequipe\MockServer\Builder\Verification;
 use Lequipe\MockServer\Client\MockServerClientInterface;
+use Lequipe\MockServer\Utils;
 
 /**
  * Fake mockserver client that stores requests in php array instead of sending to a mockserver.
@@ -19,9 +22,9 @@ class TraceableMockServerClient implements MockServerClientInterface
     /**
      * {@inheritDoc}
      */
-    public function expectation(array $parameters): void
+    public function expectation($parameters): void
     {
-        $this->expectations[] = $parameters;
+        $this->expectations[] = Utils::toArray($parameters, Expectation::class);
     }
 
     public function getExpectations(): array
@@ -32,9 +35,11 @@ class TraceableMockServerClient implements MockServerClientInterface
     /**
      * {@inheritDoc}
      */
-    public function verify(array $parameters): void
+    public function verify($parameters): bool
     {
-        $this->verifications[] = $parameters;
+        $this->verifications[] = Utils::toArray($parameters, Verification::class);
+
+        return true;
     }
 
     public function getVerifications(): array

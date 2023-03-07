@@ -423,6 +423,10 @@ class MockServerContext implements Context
                 ->pathWithParameters($path)
         ;
 
-        $this->client->verify($verification->toArray());
+        $verified = $this->client->verify($verification->toArray());
+
+        if (!$verified) {
+            throw new Exception("Verification that $method $path have been called exactly $times times has failed.");
+        }
     }
 }

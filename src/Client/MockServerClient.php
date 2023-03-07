@@ -9,9 +9,9 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\Psr7\Utils;
 use Http\Discovery\Psr18ClientDiscovery;
-use InvalidArgumentException;
 use Lequipe\MockServer\Builder\Expectation;
 use Lequipe\MockServer\Builder\Verification;
+use Lequipe\MockServer\Utils as LequipeUtils;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -55,39 +55,21 @@ class MockServerClient implements MockServerClientInterface
      */
     public function expectation($parameters): void
     {
-        $this->sendJsonRequest('PUT', 'expectation', self::toArray($parameters, Expectation::class));
+        $this->sendJsonRequest('PUT', 'expectation', LequipeUtils::toArray($parameters, Expectation::class));
     }
 
     /**
      * @param array|Verification $parameters
      */
-    public function verify(array $parameters): void
+    public function verify($parameters): bool
     {
-        $this->sendJsonRequest('PUT', 'verify', self::toArray($parameters, Verification::class));
+        $response = $this->sendJsonRequest('PUT', 'verify', LequipeUtils::toArray($parameters, Verification::class));
+
+        return 202 === $response->getStatusCode();
     }
 
     public function reset(): void
     {
         $this->sendJsonRequest('PUT', 'reset');
-    }
-
-    /**
-     * Check that $value is either an array or an instance of $class.
-     * Then return $value as array.
-     */
-    private static function toArray($value, string $class): array
-    {
-        if (is_array($value)) {
-            return $value;
-        }
-
-        if (is_subclass_of($value, $class)) {
-            return $value->toArray();
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'Expected array, or an instance of "%s".',
-            $class,
-        ));
     }
 }

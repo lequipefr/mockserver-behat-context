@@ -9,16 +9,20 @@ interface MockServerClientInterface
     /**
      * Puts an expectation on mockserver instance.
      *
+     * @param array|Expectation $parameters
+     *
      * {@see https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi#/expectation/put_expectation}
      */
-    public function expectation(array $parameters): void;
+    public function expectation($parameters): void;
 
     /**
      * Verify a request has been received a specific number of times.
      *
+     * @param array|Verification $parameters
+     *
      * {@see https://app.swaggerhub.com/apis/jamesdbloom/mock-server-openapi#/verify/put_mockserver_verify}
      */
-    public function verify(array $parameters): void;
+    public function verify($parameters): bool;
 
     /**
      * Clears all expectations and recorded requests.
