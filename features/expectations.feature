@@ -477,3 +477,29 @@ Feature: Expectations
                 }
             }
             """
+
+    Scenario: Timeout
+        Used to test your code when a third party API is currently slow and timeout.
+
+        Example:
+
+        > Given the request "GET" "/sso/users/1" will timeout <br>
+        > When I send a "GET" request on "/users/1" <br>
+        > Then ... (test that your API don't falls on timeout also)
+
+        Given the request "GET" "/users" will timeout
+        Then mockserver should receive the following expectation only:
+            """
+            {
+                "httpRequest": {
+                    "method": "GET",
+                    "path": "/users"
+                },
+                "httpResponse": {
+                    "delay": {
+                        "timeUnit": "SECONDS",
+                        "value": 600
+                    }
+                }
+            }
+            """

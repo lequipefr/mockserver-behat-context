@@ -404,6 +404,32 @@ class MockServerContext implements Context
     }
 
     /**
+     * @Then the request :method :path will timeout
+     *
+     * Used to test your code when a third party API is currently slow and timeout.
+     *
+     * Example:
+     *
+     * Given the request "GET" "/sso/users/1" will timeout
+     *
+     * When I send a "GET" request on "/users/1"
+     * Then ... (test that your API don't falls on timeout also)
+     */
+    public function theRequestWillTimeout(string $method, string $path): void
+    {
+        $this->getCurrentExpectation()->httpRequest()
+            ->method($method)
+            ->pathWithParameters($path)
+        ;
+
+        $this->getCurrentExpectation()->httpResponse()
+            ->delaySeconds(600)
+        ;
+
+        $this->client->expectation($this->dumpCurrentExpectation());
+    }
+
+    /**
      * @Then the request :method :path should have been called exactly :times times
      *
      * Cannot be used alone, must verify that an *existing* expectation has been called.

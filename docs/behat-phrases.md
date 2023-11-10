@@ -533,6 +533,37 @@ Payload sent to mockserver endpoint `PUT /expectation`:
 }
 ```
 
+### Timeout
+
+Used to test your code when a third party API is currently slow and timeout.
+
+Example:
+
+> Given the request "GET" "/sso/users/1" will timeout <br>
+> When I send a "GET" request on "/users/1" <br>
+> Then ... (test that your API don't falls on timeout also)
+
+``` cucumber
+Given the request "GET" "/users" will timeout
+```
+
+Payload sent to mockserver endpoint `PUT /expectation`:
+
+``` json
+{
+    "httpRequest": {
+        "method": "GET",
+        "path": "/users"
+    },
+    "httpResponse": {
+        "delay": {
+            "timeUnit": "SECONDS",
+            "value": 600
+        }
+    }
+}
+```
+
 ## Reset
 
 ### Reset all expectations.

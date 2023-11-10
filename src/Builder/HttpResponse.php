@@ -18,6 +18,7 @@ class HttpResponse
     private $body = null;
 
     private ?array $cookies = null;
+    private ?Delay $delay = null;
 
     public function statusCode(int $statusCode): self
     {
@@ -50,12 +51,30 @@ class HttpResponse
         return $this;
     }
 
+    public function delay(TimeUnitEnum $timeUnit, int $value): self
+    {
+        $this->delay = new Delay($timeUnit, $value);
+
+        return $this;
+    }
+
+    public function delaySeconds(int $seconds): self
+    {
+        return $this->delay(TimeUnitEnum::SECONDS, $seconds);
+    }
+
+    public function delayMilliseconds(int $milliseconds): self
+    {
+        return $this->delay(TimeUnitEnum::MILLISECONDS, $milliseconds);
+    }
+
     public function toArray(): array
     {
         return array_filter([
             'statusCode' => $this->statusCode,
             'body' => $this->body,
             'cookies' => $this->cookies,
+            'delay' => $this->delay?->toArray(),
         ], function ($v) {
             return null !== $v;
         });
