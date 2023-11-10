@@ -51,7 +51,7 @@ class HttpResponse
         return $this;
     }
 
-    public function delay(TimeUnitEnum $timeUnit, int $value): self
+    public function delay(string $timeUnit, int $value): self
     {
         $this->delay = new Delay($timeUnit, $value);
 

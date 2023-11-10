@@ -7,11 +7,13 @@ namespace Lequipe\MockServer\Builder;
 class Delay
 {
     public function __construct(
-        private TimeUnitEnum $timeUnit,
+        private string $timeUnit,
         private int $value,
-    ) {}
+    ) {
+        TimeUnitEnum::check($timeUnit);
+    }
 
-    public function getTimeUnit(): TimeUnitEnum
+    public function getTimeUnit(): string
     {
         return $this->timeUnit;
     }
@@ -24,7 +26,7 @@ class Delay
     public function toArray(): array
     {
         return [
-            'timeUnit' => $this->timeUnit->name,
+            'timeUnit' => $this->timeUnit,
             'value' => $this->value,
         ];
     }
