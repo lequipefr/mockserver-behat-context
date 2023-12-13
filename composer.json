@@ -8,7 +8,7 @@
         "behat/behat": "^3.0",
         "behat/gherkin": "^4.0",
         "psr/http-client": "^1.0",
-        "psr/http-message": "^1.0",
+        "psr/http-message": "^1.0|^2.0",
         "php-http/discovery": "^1.14",
         "guzzlehttp/psr7": "^2.4"
     },
@@ -25,6 +25,11 @@
     "autoload-dev": {
         "psr-4": {
             "Lequipe\\Test\\MockServer\\": ["tests/", "tests/bootstrap/"]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
         }
     }
 }
