@@ -42,7 +42,7 @@ class Utils
             return $value;
         }
 
-        if (is_subclass_of($value, $class)) {
+        if (is_a($value, $class) || is_subclass_of($value, $class)) {
             return $value->toArray();
         }
 

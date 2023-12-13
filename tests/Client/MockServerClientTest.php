@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lequipe\Test\MockServer\Client;
 
+use Lequipe\MockServer\Builder\Expectation;
 use Lequipe\MockServer\Client\MockServerClient;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -48,6 +49,41 @@ class MockServerClientTest extends TestCase
         $client = new MockServerClient('https://127.0.0.1:8080', $client->reveal());
 
         $client->expectation($expectationPayload);
+    }
+
+    public function testExpectationWithBuilder()
+    {
+        $client = $this->prophesize(ClientInterface::class);
+        $response = $this->prophesize(ResponseInterface::class);
+
+        $expectation = new Expectation();
+
+        $expectation->httpRequest()
+            ->method('GET')
+            ->path('/user/1')
+        ;
+
+        $expectation->httpResponse()
+            ->bodyJson([
+                'id' => 1,
+                'name' => 'Zidane',
+            ])
+        ;
+
+        $client
+            ->sendRequest(Argument::that(fn (RequestInterface $request) =>
+                $request->getMethod() === 'PUT'
+                && $request->getUri()->__toString() === 'https://127.0.0.1:8080/expectation'
+                && $request->getHeader('content-type') === ['application/json']
+                && $request->getBody()->getContents() === json_encode($expectation->toArray())
+            ))
+            ->willReturn($response->reveal())
+            ->shouldBeCalled()
+        ;
+
+        $client = new MockServerClient('https://127.0.0.1:8080', $client->reveal());
+
+        $client->expectation($expectation);
     }
 
     public function testExpectationWithPrefixedBaseUri()
